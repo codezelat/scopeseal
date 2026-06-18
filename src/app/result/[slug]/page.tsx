@@ -11,6 +11,18 @@ import type {
   RiskHit,
 } from "@/lib/engine";
 
+async function getAiEnabled(): Promise<boolean> {
+  try {
+    const config = await db.aiConfig.findUnique({
+      where: { id: "singleton" },
+      select: { enabled: true },
+    });
+    return config?.enabled ?? false;
+  } catch {
+    return false;
+  }
+}
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -50,17 +62,20 @@ export default async function ResultPage({ params }: PageProps) {
 
   if (!review) notFound();
 
-  const result: AnalysisResult = {
-    score: review.score,
-    band: review.band as AnalysisResult["band"],
-    categories: review.categories as unknown as CategoryResult[],
-    missing: review.missing as unknown as MissingItem[],
-    risks: review.risks as unknown as RiskHit[],
-    suggestions: review.suggestions as unknown as string[],
-    outputs: review.outputs as unknown as AnalysisResult["outputs"],
-    wordCount: review.inputWordCount,
-    sensitiveWarning: false,
-  };
+  const [result, aiEnabled] = await Promise.all([
+    Promise.resolve({
+      score: review.score,
+      band: review.band as AnalysisResult["band"],
+      categories: review.categories as unknown as CategoryResult[],
+      missing: review.missing as unknown as MissingItem[],
+      risks: review.risks as unknown as RiskHit[],
+      suggestions: review.suggestions as unknown as string[],
+      outputs: review.outputs as unknown as AnalysisResult["outputs"],
+      wordCount: review.inputWordCount,
+      sensitiveWarning: false,
+    }),
+    getAiEnabled(),
+  ]);
 
   return (
     <>
@@ -72,6 +87,8 @@ export default async function ResultPage({ params }: PageProps) {
           shareSlug={review.shareSlug}
           projectType={review.projectType}
           isOwner={false}
+          aiEnabled={aiEnabled}
+          scopeText={review.inputText}
         />
       </main>
       <Footer />

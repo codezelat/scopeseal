@@ -11,6 +11,8 @@ import {
   CheckCircle2,
   Trash2,
   ExternalLink,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import type { AnalysisResult } from "@/lib/engine";
 import { resultToMarkdown } from "@/lib/export";
@@ -23,7 +25,20 @@ import { Separator } from "@/components/ui/separator";
 import { SealScoreRing } from "@/components/brand/seal-score-ring";
 import { Reveal } from "@/components/animations/reveal";
 import { CountUp } from "@/components/animations/count-up";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
+
+interface AiEnhanceResult {
+  rewrittenScope: string;
+  improvements: string[];
+}
 
 interface ResultViewProps {
   result: AnalysisResult;
@@ -31,6 +46,8 @@ interface ResultViewProps {
   shareSlug: string;
   projectType: string;
   isOwner: boolean;
+  aiEnabled?: boolean;
+  scopeText?: string;
 }
 
 const bandConfig: Record<
@@ -110,9 +127,14 @@ export function ResultView({
   shareSlug,
   projectType,
   isOwner,
+  aiEnabled = false,
+  scopeText = "",
 }: ResultViewProps) {
   const reduced = useReducedMotion();
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState<AiEnhanceResult | null>(null);
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
   const band = bandConfig[result.band] ?? bandConfig.risky;
 
   const origin =
@@ -148,6 +170,30 @@ export function ResultView({
   const copyShareLink = useCallback(() => {
     copyToClipboard(shareUrl, "share");
   }, [copyToClipboard, shareUrl]);
+
+  const handleAiEnhance = useCallback(async () => {
+    if (!scopeText) return;
+    setAiLoading(true);
+    try {
+      const res = await fetch("/api/analyze/enhance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scopeText, projectType }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        toast.error(data.error ?? "AI enhancement failed");
+      } else {
+        const data: AiEnhanceResult = await res.json();
+        setAiResult(data);
+        setAiDialogOpen(true);
+      }
+    } catch {
+      toast.error("AI enhancement failed");
+    } finally {
+      setAiLoading(false);
+    }
+  }, [scopeText, projectType]);
 
   const sortedMissing = [...result.missing].sort((a, b) => {
     const order = { high: 0, medium: 1, low: 2 };
@@ -255,6 +301,21 @@ export function ResultView({
               New analysis
             </a>
           </Button>
+          {aiEnabled && scopeText && (
+            <Button
+              size="sm"
+              onClick={handleAiEnhance}
+              disabled={aiLoading}
+              className="gap-1.5 bg-seal-gradient text-white"
+            >
+              {aiLoading ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="size-3.5" />
+              )}
+              {aiLoading ? "Enhancing..." : "Enhance with AI"}
+            </Button>
+          )}
           {isOwner && (
             <Button
               variant="outline"
@@ -533,6 +594,60 @@ export function ResultView({
           </Button>
         </section>
       </Reveal>
+
+      {/* AI Enhancement dialog */}
+      <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="size-4 text-violet-500" />
+              AI-Enhanced Scope
+              <Badge variant="secondary" className="ml-1 text-xs">AI</Badge>
+            </DialogTitle>
+            <DialogDescription>
+              ScopeSeal AI has rewritten your scope for clarity and completeness.
+            </DialogDescription>
+          </DialogHeader>
+          {aiResult && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="mb-2 text-sm font-medium">Rewritten Scope</h4>
+                <pre className="max-h-60 overflow-auto whitespace-pre-wrap rounded-lg border bg-muted p-3 font-mono text-sm leading-relaxed">
+                  {aiResult.rewrittenScope}
+                </pre>
+              </div>
+              {aiResult.improvements.length > 0 && (
+                <div>
+                  <h4 className="mb-2 text-sm font-medium">Improvements</h4>
+                  <ul className="space-y-1">
+                    {aiResult.improvements.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm">
+                        <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (aiResult) {
+                  copyToClipboard(aiResult.rewrittenScope, "ai-rewritten");
+                }
+              }}
+              className="gap-1.5"
+            >
+              <Copy className="size-3.5" />
+              {copiedField === "ai-rewritten" ? "Copied!" : "Copy"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
