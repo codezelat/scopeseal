@@ -34,11 +34,15 @@ export function Header() {
   return (
     <motion.header
       className={`sticky top-0 z-40 w-full border-b backdrop-blur-xl transition-colors ${
-        scrolled ? "bg-background/80 border-border" : "bg-transparent border-transparent"
+        scrolled
+          ? "bg-background/80 border-border"
+          : "bg-transparent border-transparent"
       }`}
       initial={reduced ? { opacity: 1 } : { opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={reduced ? { duration: 0 } : { duration: 0.4, ease: "easeOut" }}
+      transition={
+        reduced ? { duration: 0 } : { duration: 0.4, ease: "easeOut" }
+      }
     >
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
         {/* Logo */}
@@ -58,8 +62,12 @@ export function Header() {
         {/* Right side */}
         <div className="flex items-center gap-1">
           <ThemeToggle />
-          <Button size="sm" className="hidden bg-seal-gradient text-white sm:inline-flex" asChild>
-            <a href="#cta">Analyze a brief</a>
+          <Button
+            size="sm"
+            className="hidden bg-seal-gradient text-white sm:inline-flex"
+            asChild
+          >
+            <Link href="/analyze">Analyze</Link>
           </Button>
           <Button
             variant="ghost"
@@ -91,8 +99,12 @@ export function Header() {
                 <a href={link.href}>{link.label}</a>
               </Button>
             ))}
-            <Button className="mt-4 bg-seal-gradient text-white" asChild onClick={() => setOpen(false)}>
-              <a href="#cta">Analyze a brief</a>
+            <Button
+              className="mt-4 bg-seal-gradient text-white"
+              asChild
+              onClick={() => setOpen(false)}
+            >
+              <Link href="/analyze">Analyze</Link>
             </Button>
           </nav>
         </SheetContent>
