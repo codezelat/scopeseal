@@ -1,21 +1,21 @@
 import Link from "next/link";
-import { Code2, ExternalLink } from "lucide-react";
+import { Code2 } from "lucide-react";
 import { SealLogo } from "@/components/brand/seal-logo";
 
 const productLinks = [
-  { label: "Features", href: "#features" },
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Chrome extension", href: "#", icon: ExternalLink },
+  { label: "Features", href: "/#features" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "Analyze", href: "/analyze" },
 ];
 
 const companyLinks = [
-  { label: "About", href: "#" },
-  { label: "Contact", href: "#" },
+  { label: "Support", href: "/support" },
+  { label: "Contact", href: "/support" },
 ];
 
 const legalLinks = [
-  { label: "Privacy", href: "#" },
-  { label: "Terms", href: "#" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "Terms", href: "/terms" },
 ];
 
 export function Footer() {
@@ -42,7 +42,6 @@ export function Footer() {
                     className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {link.label}
-                    {link.icon && <link.icon className="size-3" />}
                   </Link>
                 </li>
               ))}
