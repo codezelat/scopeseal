@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Sora, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 
 const sora = Sora({
   subsets: ["latin"],
@@ -37,6 +39,30 @@ export const metadata: Metadata = {
     "agency tools",
     "scope clarity",
   ],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://scopeseal.codezela.com",
+    siteName: "ScopeSeal",
+    title: "ScopeSeal — Seal the gaps before they become unpaid work",
+    description:
+      "Check project briefs, client messages, and proposal scopes for missing details, vague wording, and scope-creep risks.",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "ScopeSeal",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ScopeSeal — Seal the gaps before they become unpaid work",
+    description:
+      "Check project briefs, client messages, and proposal scopes for missing details, vague wording, and scope-creep risks.",
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({
@@ -55,7 +81,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
