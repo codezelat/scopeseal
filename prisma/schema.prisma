@@ -1,0 +1,138 @@
+// Prisma schema — ScopeSeal
+// Prisma 7: no `url`/`directUrl` in the datasource block; the connection string
+// is provided via prisma.config.ts (reads DATABASE_URL from the environment).
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum ReviewBand {
+  clear
+  review
+  risky
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  passwordHash     String
+  name             String?
+  role             UserRole  @default(USER)
+  guestReportsUsed Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  reviews  Review[]
+  accounts Account[]
+  sessions Session[]
+
+  @@map("users")
+}
+
+model Review {
+  id             String     @id @default(cuid())
+  userId         String?
+  user           User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  projectType    String
+  inputText      String
+  inputWordCount Int        @default(0)
+  score          Int        @default(0)
+  band           ReviewBand @default(risky)
+  categories     Json
+  missing        Json
+  risks          Json
+  suggestions    Json
+  outputs        Json
+  shareSlug      String     @unique
+  isShared       Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("reviews")
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  projectType String
+  title       String
+  body        String
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("templates")
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value Json
+
+  @@map("settings")
+}
+
+model AiConfig {
+  id              String   @id @default("singleton")
+  provider        String   @default("openai")
+  baseUrl         String   @default("https://api.openai.com/v1")
+  apiKeyEncrypted String?
+  model           String   @default("gpt-4o-mini")
+  enabled         Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("ai_configs")
+}
+
+// Auth.js adapter tables (for future OAuth providers; credentials uses JWT).
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}

@@ -107,10 +107,23 @@ prisma.config.ts
 
 - **`@custom-variant dark` MUST come AFTER `@import "tailwindcss"`** in
   `globals.css`, or dark utilities silently produce nothing.
-- **NeonDB + Prisma 7:** connection URL goes in `prisma.config.ts`
-  (`datasource: { url: env("DATABASE_URL") }`). `schema.prisma` datasource has
-  ONLY `provider = "postgresql"` (no `url`/`directUrl`). Remove
-  `channel_binding=require` from the connection string (keep `sslmode=require`).
+- **Prisma 7 REQUIRES a driver adapter** (this is the #1 Prisma 7 gotcha). `new
+  PrismaClient()` / `new PrismaClient({ datasourceUrl })` are REMOVED in v7 and
+  throw "needs non-empty valid PrismaClientOptions". You MUST install
+  `@prisma/adapter-pg` + `pg` and instantiate like:
+  ```ts
+  import { PrismaPg } from "@prisma/adapter-pg";
+  import { PrismaClient } from "@/generated/prisma/client";
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+  export const db = new PrismaClient({ adapter });
+  ```
+  Also explicitly install `@prisma/client-runtime-utils` (the generated client
+  `require()`s it; pnpm does not always hoist it). **`tsx` scripts do NOT load
+  `.env`** — seed scripts use `node --env-file-if-exists=.env --import tsx …`
+  (Next.js loads `.env` automatically for the app). NeonDB + Prisma 7: connection
+  URL goes in `prisma.config.ts` (`datasource: { url: env("DATABASE_URL") }`) for
+  the CLI. `schema.prisma` datasource has ONLY `provider = "postgresql"` (no
+  `url`/`directUrl`). Remove `channel_binding=require` from NeonDB URLs.
 - **Auth.js `signOut` is a server export** — do NOT import it from `@/lib/auth`
   in client components (pulls `node:module` into client bundle). Use
   `import { signOut } from "next-auth/react"` in client code.
