@@ -1,19 +1,20 @@
-import Link from "next/link";
+import { HomeActionLink } from "./home-action-link";
+import { HomeMotionSection } from "./home-motion";
 import { ThemeImage } from "./theme-image";
 import styles from "./home-page.module.css";
 
 export function ExtensionCtaSection() {
   return (
-    <section className={styles.extensionSection} id="extension" aria-labelledby="extension-heading">
+    <HomeMotionSection className={styles.extensionSection} id="extension" aria-labelledby="extension-heading">
       <div className={styles.extensionCopy}>
         <h2 id="extension-heading">Check Briefs In One Click</h2>
         <p>
           The ScopeSeal Chrome extension lets you highlight any brief or client message and get an
           instant clarity score.
         </p>
-        <Link className={styles.primaryButton} href="/support">
+        <HomeActionLink className={styles.primaryButton} href="/support">
           Add To Chrome
-        </Link>
+        </HomeActionLink>
       </div>
       <ThemeImage
         className={styles.extensionVisual}
@@ -21,6 +22,6 @@ export function ExtensionCtaSection() {
         lightSrc="/images/home/extension-light.png"
         alt="ScopeSeal Chrome extension analyzing a brief"
       />
-    </section>
+    </HomeMotionSection>
   );
 }

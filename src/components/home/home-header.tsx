@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HomeActionLink } from "./home-action-link";
 import { HomeLogo } from "./home-logo";
 import { HomeThemeToggle } from "./home-theme-toggle";
 import styles from "./home-page.module.css";
@@ -23,9 +24,9 @@ export function HomeHeader() {
         </nav>
         <div className={styles.headerActions}>
           <HomeThemeToggle />
-          <Link className={styles.primaryButton} href="/analyze">
+          <HomeActionLink className={styles.primaryButton} href="/analyze">
             Analyze Brief
-          </Link>
+          </HomeActionLink>
         </div>
       </div>
     </header>

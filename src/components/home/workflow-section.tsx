@@ -1,4 +1,5 @@
 import { ThemeImage } from "./theme-image";
+import { HomeMotionSection } from "./home-motion";
 import styles from "./home-page.module.css";
 
 const steps = [
@@ -27,7 +28,7 @@ const steps = [
 
 export function WorkflowSection() {
   return (
-    <section className={styles.workflowSection} id="how-it-works" aria-labelledby="workflow-heading">
+    <HomeMotionSection className={styles.workflowSection} id="how-it-works" aria-labelledby="workflow-heading">
       <div className={styles.centeredIntro}>
         <h2 id="workflow-heading">How ScopeSeal Analyzes Your Brief</h2>
         <p>Watch a vague client brief become a project-ready scope</p>
@@ -52,6 +53,6 @@ export function WorkflowSection() {
           </li>
         ))}
       </ol>
-    </section>
+    </HomeMotionSection>
   );
 }

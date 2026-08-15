@@ -1,13 +1,23 @@
 import Image from "next/image";
-import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+import { HomeActionLink } from "./home-action-link";
 import { ThemeImage } from "./theme-image";
 import styles from "./home-page.module.css";
 
 export function HomeHero() {
   return (
     <section className={styles.hero} aria-labelledby="home-heading">
-      <div className={styles.heroGrid} aria-hidden="true" />
+      <div className={styles.heroGrid} aria-hidden="true">
+        <Image
+          className={styles.heroGridImage}
+          src="/images/home/grid-dark.png"
+          alt=""
+          fill
+          priority
+          fetchPriority="high"
+          sizes="(max-width: 800px) 1px, 100vw"
+        />
+      </div>
       <div className={styles.heroInner}>
         <Image
           className={styles.heroMascot}
@@ -16,7 +26,7 @@ export function HomeHero() {
           width={235}
           height={266}
           priority
-          sizes="(max-width: 767px) 150px, 235px"
+          sizes="(max-width: 800px) 150px, (max-width: 1024px) 170px, 235px"
         />
         <div className={styles.heroCopy}>
           <h1 id="home-heading">
@@ -28,9 +38,9 @@ export function HomeHero() {
             details, vague wording, and scope-creep risks in seconds.
           </p>
           <div className={styles.heroActions}>
-            <Link className={styles.primaryButton} href="/analyze">
+            <HomeActionLink className={styles.primaryButton} href="/analyze">
               Analyze Brief
-            </Link>
+            </HomeActionLink>
             <a className={styles.secondaryButton} href="#extension">
               Add To Chrome
               <ExternalLink aria-hidden="true" />
@@ -41,8 +51,8 @@ export function HomeHero() {
       <div className={styles.heroPreviewWrap}>
         <ThemeImage
           className={styles.heroPreview}
-          darkSrc="/images/home/inbox-result-dark.png"
-          lightSrc="/images/home/inbox-result-light.png"
+          darkSrc="/images/home/inbox-result-dark-hd.webp"
+          lightSrc="/images/home/inbox-result-light-hd.webp"
           alt="ScopeSeal reviewing a project inquiry and showing a clarity score of 27"
         />
       </div>

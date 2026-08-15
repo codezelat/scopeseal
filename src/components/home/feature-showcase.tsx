@@ -1,4 +1,5 @@
 import { ThemeImage } from "./theme-image";
+import { HomeMotionSection } from "./home-motion";
 import styles from "./home-page.module.css";
 
 const featureCards = [
@@ -46,7 +47,7 @@ const featureCards = [
 
 export function FeatureShowcase() {
   return (
-    <section className={styles.section} id="features" aria-labelledby="features-heading">
+    <HomeMotionSection className={styles.section} id="features" aria-labelledby="features-heading">
       <div className={styles.sectionIntro}>
         <h2 id="features-heading">What&apos;s New In ScopeSeal</h2>
         <p>
@@ -70,6 +71,6 @@ export function FeatureShowcase() {
           </article>
         ))}
       </div>
-    </section>
+    </HomeMotionSection>
   );
 }

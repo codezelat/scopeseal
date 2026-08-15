@@ -1,4 +1,5 @@
 import { ThemeImage } from "./theme-image";
+import { HomeMotionSection } from "./home-motion";
 import styles from "./home-page.module.css";
 
 const reviewPoints = [
@@ -10,7 +11,7 @@ const reviewPoints = [
 
 export function AiReviewSection() {
   return (
-    <section className={styles.aiReviewSection} aria-labelledby="ai-review-heading">
+    <HomeMotionSection className={styles.aiReviewSection} aria-labelledby="ai-review-heading">
       <div className={styles.aiReviewCopy}>
         <h2 id="ai-review-heading">Let AI Review Every Brief For You</h2>
         <p>ScopeSeal analyzes every project brief and highlights unclear requirements.</p>
@@ -34,6 +35,6 @@ export function AiReviewSection() {
           alt="ScopeSeal clarity report over the reviewed brief"
         />
       </div>
-    </section>
+    </HomeMotionSection>
   );
 }

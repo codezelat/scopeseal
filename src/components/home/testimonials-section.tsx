@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { HomeMotionSection } from "./home-motion";
 import styles from "./home-page.module.css";
 
 const testimonials = [
@@ -28,7 +29,7 @@ const testimonials = [
 
 export function TestimonialsSection() {
   return (
-    <section className={styles.testimonialsSection} id="testimonials" aria-labelledby="testimonials-heading">
+    <HomeMotionSection className={styles.testimonialsSection} id="testimonials" aria-labelledby="testimonials-heading">
       <div className={styles.testimonialsTop}>
         <div className={styles.sectionIntro}>
           <h2 id="testimonials-heading">Trusted By Teams Who Value Clear Scope</h2>
@@ -46,7 +47,9 @@ export function TestimonialsSection() {
         {testimonials.map((testimonial) => (
           <figure className={styles.testimonialCard} key={testimonial.name}>
             <figcaption>
-              <Image src={testimonial.image} alt="" width={44} height={44} sizes="44px" />
+              <span className={styles.testimonialAvatar}>
+                <Image src={testimonial.image} alt="" fill sizes="44px" />
+              </span>
               <span>
                 <strong>{testimonial.name}</strong>
                 <small>{testimonial.role}</small>
@@ -59,6 +62,6 @@ export function TestimonialsSection() {
           </figure>
         ))}
       </div>
-    </section>
+    </HomeMotionSection>
   );
 }

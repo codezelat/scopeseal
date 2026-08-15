@@ -23,9 +23,9 @@
   --home-text: #f7f7f8;
   --home-muted: #a5a6aa;
   --home-border: #2c2c2c;
-  --home-accent: #1f6fff;
-  --home-accent-hover: #3b82ff;
-  --home-grid: url("/images/home/grid-dark.png");
+  --home-accent: #1267ed;
+  --home-accent-hover: #0758d8;
+  --home-grid: none;
   --home-rays: url("/images/home/rays-dark.jpg");
 }
 
@@ -103,6 +103,19 @@
   background: rgb(255 255 255 / 78%);
 }
 
+.logoMark,
+.logo > span:last-child {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.logo:hover .logoMark {
+  transform: rotate(-5deg) scale(1.06);
+}
+
+.logo:hover > span:last-child {
+  transform: translateX(2px);
+}
+
 .desktopNav {
   display: flex;
   align-items: center;
@@ -112,11 +125,31 @@
 
 .desktopNav a,
 .footer a {
+  position: relative;
   color: var(--home-muted);
   font-size: 14px;
   line-height: 1.4;
   text-decoration: none;
   transition: color 160ms ease;
+}
+
+.desktopNav a::after {
+  position: absolute;
+  right: 0;
+  bottom: -7px;
+  left: 0;
+  height: 1px;
+  background: var(--home-accent);
+  content: "";
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.desktopNav a:hover::after,
+.desktopNav a:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
 }
 
 .desktopNav a:hover,
@@ -152,6 +185,11 @@
 .themeToggle svg {
   width: 17px;
   height: 17px;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.themeToggle:hover svg {
+  transform: rotate(20deg) scale(1.08);
 }
 
 .primaryButton,
@@ -183,6 +221,12 @@
   transform: translateY(-1px);
 }
 
+.primaryButton:active,
+.secondaryButton:active,
+.themeToggle:active {
+  transform: translateY(0) scale(0.97);
+}
+
 .secondaryButton {
   border: 1px solid var(--home-border);
   background: color-mix(in srgb, var(--home-bg) 80%, transparent);
@@ -197,6 +241,40 @@
 .secondaryButton svg {
   width: 16px;
   height: 16px;
+  transition: transform 180ms ease;
+}
+
+.secondaryButton:hover svg {
+  transform: translate(2px, -2px);
+}
+
+.actionLink {
+  position: relative;
+}
+
+.actionLinkLabel {
+  display: inline-flex;
+  align-items: center;
+  transition: opacity 150ms ease;
+}
+
+.actionLink[data-pending] {
+  pointer-events: none;
+}
+
+.actionLink[data-pending] .actionLinkLabel {
+  opacity: 0;
+}
+
+.actionLinkLoader {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.actionLinkLoader > div {
+  color: rgb(255 255 255 / 32%);
 }
 
 .hero {
@@ -217,28 +295,47 @@
   pointer-events: none;
 }
 
+.heroGridImage {
+  z-index: -1;
+  display: none;
+  object-fit: cover;
+  object-position: center bottom;
+}
+
+:global(.dark) .heroGridImage {
+  display: block;
+}
+
 .heroInner {
   position: relative;
   display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 220px;
   min-height: 600px;
   width: min(100% - 64px, 1200px);
   margin: 0 auto;
-  place-items: center;
+  align-items: center;
 }
 
 .heroMascot {
-  position: absolute;
-  left: 15px;
-  bottom: 140px;
+  grid-column: 1;
+  align-self: end;
   width: 235px;
   height: auto;
+  margin: 0 0 84px -10px;
   filter: drop-shadow(0 22px 30px rgb(7 73 191 / 24%));
+  transition: filter 260ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.heroMascot:hover {
+  filter: drop-shadow(0 26px 38px rgb(7 73 191 / 34%));
+  transform: translateY(-5px) rotate(-1deg);
 }
 
 .heroCopy {
   position: relative;
   z-index: 2;
-  width: min(100%, 1000px);
+  grid-column: 2;
+  width: 100%;
   padding-top: 22px;
   text-align: center;
 }
@@ -354,6 +451,13 @@
   border-radius: 5px;
   padding: 26px;
   background: var(--home-card);
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.featureCard:hover {
+  border-color: color-mix(in srgb, var(--home-accent) 45%, var(--home-border));
+  box-shadow: 0 22px 50px rgb(0 0 0 / 10%);
+  transform: translateY(-4px);
 }
 
 :global(.dark) .featureCard {
@@ -396,6 +500,11 @@
   left: 20px;
   border-radius: 4px;
   background-color: color-mix(in srgb, var(--home-bg) 70%, transparent);
+  transition: filter 220ms ease;
+}
+
+.featureCard:hover .themeImage {
+  filter: brightness(1.06) saturate(1.04);
 }
 
 .featureImageClarity {
@@ -410,7 +519,7 @@
 }
 
 :global(.dark) .featureImageMissing {
-  background-position: center 30%;
+  background-position: center 48%;
   background-size: 56% auto;
 }
 
@@ -452,6 +561,12 @@
   padding-left: 34px;
 }
 
+.workflowGrid li:hover .stepHeader span {
+  color: #ffffff;
+  background: var(--home-accent);
+  box-shadow: 0 0 0 7px color-mix(in srgb, var(--home-accent) 13%, transparent);
+}
+
 .workflowGrid li::before {
   position: absolute;
   top: 44px;
@@ -480,6 +595,7 @@
   font-size: 14px;
   font-weight: 600;
   box-shadow: inset 0 0 0 1px var(--home-border);
+  transition: background-color 220ms ease, box-shadow 220ms ease, color 220ms ease;
 }
 
 .stepHeader i {
@@ -511,6 +627,12 @@
   aspect-ratio: 1.1;
   margin-top: 10px;
   background-position: top center;
+  transition: filter 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.workflowGrid li:hover .stepImage {
+  filter: brightness(1.05);
+  transform: translateY(-4px);
 }
 
 .aiReviewSection {
@@ -560,6 +682,17 @@
   border-radius: 5px;
   background-size: cover;
   box-shadow: 0 28px 55px rgb(0 0 0 / 24%);
+  transition: filter 260ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.aiReviewSection:hover .aiReviewBack {
+  filter: brightness(1.03);
+  transform: translate(-4px, -3px);
+}
+
+.aiReviewSection:hover .aiReviewFront {
+  filter: brightness(1.06);
+  transform: translate(4px, -5px);
 }
 
 .aiReviewBack {
@@ -611,6 +744,13 @@
   border-radius: 4px;
   padding: 22px;
   background: var(--home-card);
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.testimonialCard:hover {
+  border-color: color-mix(in srgb, var(--home-accent) 40%, var(--home-border));
+  box-shadow: 0 18px 45px rgb(0 0 0 / 11%);
+  transform: translateY(-4px);
 }
 
 .testimonialCard figcaption {
@@ -621,10 +761,17 @@
   border-bottom: 1px solid var(--home-border);
 }
 
-.testimonialCard figcaption img {
+.testimonialAvatar {
+  position: relative;
+  display: block;
   width: 44px;
   height: 44px;
+  flex: 0 0 44px;
+  overflow: hidden;
   border-radius: 50%;
+}
+
+.testimonialAvatar img {
   object-fit: cover;
 }
 
@@ -690,6 +837,12 @@
   min-height: 360px;
   background-position: center bottom;
   background-size: min(100%, 520px) auto;
+  transition: filter 260ms ease, transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.extensionSection:hover .extensionVisual {
+  filter: brightness(1.05);
+  transform: translateY(-5px) scale(1.01);
 }
 
 .footer {
@@ -745,9 +898,26 @@
   font-size: 17px;
 }
 
-.socialLinks a {
+.socialLinks span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
   color: inherit;
-  text-decoration: none;
+  transition: border-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.socialLinks span:hover {
+  border-color: var(--home-border);
+  color: var(--home-text);
+  transform: translateY(-2px);
+}
+
+.socialLinks svg {
+  width: 15px;
+  height: 15px;
 }
 
 .footerBottom {
@@ -769,12 +939,16 @@
   }
 
   .heroMascot {
-    left: -10px;
-    width: 185px;
+    width: 170px;
+    margin-right: 10px;
+  }
+
+  .heroInner {
+    grid-template-columns: 170px minmax(0, 1fr) 110px;
   }
 
   .heroCopy {
-    width: min(100%, 700px);
+    width: 100%;
   }
 
   .heroPreviewWrap,
@@ -800,7 +974,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 800px) {
   .headerInner {
     grid-template-columns: 1fr auto;
     width: calc(100% - 32px);
@@ -841,7 +1015,21 @@
 
   .heroGrid {
     height: 700px;
+    background-image:
+      linear-gradient(to bottom, transparent 55%, var(--home-bg) 100%),
+      linear-gradient(color-mix(in srgb, var(--home-accent) 12%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--home-accent) 10%, transparent) 1px, transparent 1px);
     background-position: 42% bottom;
+    background-size: 100% 100%, 48px 48px, 48px 48px;
+    mask-image: linear-gradient(to bottom, transparent 5%, black 44%, black 88%, transparent 100%);
+  }
+
+  :global(.dark) .heroGridImage,
+  .heroGridImage {
+    display: block;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0;
   }
 
   .heroInner {
@@ -857,8 +1045,10 @@
     position: relative;
     left: auto;
     bottom: auto;
+    align-self: center;
     width: 150px;
-    margin-bottom: 18px;
+    margin: 0 auto 22px;
+    translate: -3px 0;
   }
 
   .heroCopy {
@@ -892,6 +1082,15 @@
   .testimonialsSection {
     width: calc(100% - 32px);
     padding: 72px 0;
+  }
+
+  .section,
+  .workflowSection,
+  .aiReviewSection,
+  .testimonialsSection,
+  .extensionSection {
+    content-visibility: visible;
+    contain-intrinsic-size: none;
   }
 
   .featureGrid {
@@ -1006,6 +1205,40 @@
 
   .socialLinks {
     justify-content: flex-start;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 800px) {
+  .featureGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .featureCard,
+  .featureLarge,
+  .featureWide,
+  .featureWide:nth-last-child(2),
+  .featureWide:last-child {
+    grid-column: auto;
+  }
+
+  .featureLarge {
+    grid-column: 1 / -1;
+  }
+
+  .featureLarge .themeImage {
+    right: auto;
+    left: 50%;
+    width: min(calc(100% - 40px), 520px);
+    transform: translateX(-50%);
+  }
+
+  .testimonialGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .testimonialCard {
+    padding: 18px;
   }
 }
 

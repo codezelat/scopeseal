@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FaFacebookF, FaInstagram, FaTiktok, FaXTwitter } from "react-icons/fa6";
 import { HomeLogo } from "./home-logo";
 import styles from "./home-page.module.css";
 
@@ -48,11 +49,11 @@ export function HomeFooter() {
           ))}
         </div>
       </div>
-      <div className={styles.socialLinks} aria-label="Social platforms">
-        <span aria-label="Facebook">f</span>
-        <span aria-label="Instagram">◎</span>
-        <span aria-label="X">𝕏</span>
-        <span aria-label="TikTok">♪</span>
+      <div className={styles.socialLinks} aria-label="Social platforms" role="list">
+        <span aria-label="Facebook" role="listitem"><FaFacebookF aria-hidden="true" /></span>
+        <span aria-label="Instagram" role="listitem"><FaInstagram aria-hidden="true" /></span>
+        <span aria-label="X" role="listitem"><FaXTwitter aria-hidden="true" /></span>
+        <span aria-label="TikTok" role="listitem"><FaTiktok aria-hidden="true" /></span>
       </div>
       <div className={styles.footerBottom}>© 2026 Codezela Technologies. All rights reserved.</div>
     </footer>
