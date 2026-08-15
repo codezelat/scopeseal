@@ -1,25 +1,26 @@
-import { Header } from "@/components/site/header";
-import { Footer } from "@/components/site/footer";
-import { HeroSection } from "@/components/site/hero-section";
-import { HowItWorksSection } from "@/components/site/how-it-works-section";
-import { ProjectTypesSection } from "@/components/site/project-types-section";
-import { FeaturesSection } from "@/components/site/features-section";
-import { ScoreDemoSection } from "@/components/site/score-demo-section";
-import { ExtensionCtaSection } from "@/components/site/extension-cta-section";
+import { AiReviewSection } from "@/components/home/ai-review-section";
+import { ExtensionCtaSection } from "@/components/home/extension-cta-section";
+import { FeatureShowcase } from "@/components/home/feature-showcase";
+import { HomeFooter } from "@/components/home/home-footer";
+import { HomeHeader } from "@/components/home/home-header";
+import { HomeHero } from "@/components/home/home-hero";
+import { TestimonialsSection } from "@/components/home/testimonials-section";
+import { WorkflowSection } from "@/components/home/workflow-section";
+import styles from "@/components/home/home-page.module.css";
 
 export default function Home() {
   return (
-    <>
-      <Header />
+    <div className={styles.home}>
+      <HomeHeader />
       <main>
-        <HeroSection />
-        <HowItWorksSection />
-        <ProjectTypesSection />
-        <FeaturesSection />
-        <ScoreDemoSection />
+        <HomeHero />
+        <FeatureShowcase />
+        <WorkflowSection />
+        <AiReviewSection />
+        <TestimonialsSection />
         <ExtensionCtaSection />
       </main>
-      <Footer />
-    </>
+      <HomeFooter />
+    </div>
   );
 }
