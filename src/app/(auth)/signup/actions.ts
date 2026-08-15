@@ -8,9 +8,9 @@ import { db } from "@/lib/db";
 import type { AuthFormState } from "../signin/actions";
 
 const schema = z.object({
-  name: z.string().min(1, "Enter your name."),
-  email: z.string().email("Enter a valid email."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
+  name: z.string().trim().min(1, "Enter your name.").max(100),
+  email: z.string().email("Enter a valid email.").max(254),
+  password: z.string().min(8, "Password must be at least 8 characters.").max(128),
 });
 
 export async function signUpAction(

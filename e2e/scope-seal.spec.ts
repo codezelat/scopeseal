@@ -5,13 +5,12 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("Landing page", () => {
-  test("renders hero, project types, and CTAs", async ({ page }) => {
+  test("renders hero, product features, and CTAs", async ({ page }) => {
     await page.goto("/");
     await expect(page).toHaveTitle(/ScopeSeal/);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Seal the gaps");
-    // Project types visible
-    for (const pt of ["Website", "SEO", "Mobile App", "General Service"]) {
-      await expect(page.getByText(pt).first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Seal the gaps/i);
+    for (const feature of ["Clarity Score", "Missing Item Detection", "Risk Detection", "AI Suggestions"]) {
+      await expect(page.getByText(feature).first()).toBeVisible();
     }
   });
 

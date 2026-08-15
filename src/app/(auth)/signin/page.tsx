@@ -6,23 +6,29 @@ import { signInAction } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SealLogo } from "@/components/brand/seal-logo";
+import { SealLoader } from "@/components/brand/seal-loader";
+import { AuthFrame } from "@/components/auth/auth-frame";
 
 export default function SignInPage() {
   const [state, formAction, pending] = useActionState(signInAction, undefined);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background p-6">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <SealLogo size={44} withWordmark={false} />
-          <h1 className="font-display text-2xl font-bold">Welcome back</h1>
-          <p className="text-sm text-muted-foreground">
-            Sign in to save reviews and run deeper analysis.
+    <AuthFrame
+      title="Welcome back"
+      description="Sign in to save reviews and run deeper analysis."
+    >
+      <div className="space-y-8">
+        <div>
+          <h1 className="font-display text-3xl font-bold">Sign in</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            No account?{" "}
+            <Link href="/signup" className="font-medium text-primary hover:underline">
+              Create one
+            </Link>
           </p>
         </div>
 
-        <form action={formAction} className="space-y-4">
+        <form action={formAction} className="space-y-5" aria-describedby="auth-error">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -30,7 +36,10 @@ export default function SignInPage() {
               name="email"
               type="email"
               autoComplete="email"
+              placeholder="you@example.com"
+              maxLength={254}
               required
+              className="mt-2"
             />
           </div>
           <div className="space-y-2">
@@ -40,33 +49,27 @@ export default function SignInPage() {
               name="password"
               type="password"
               autoComplete="current-password"
+              placeholder="Enter your password"
+              maxLength={128}
               required
+              className="mt-2"
             />
           </div>
-          {state?.error ? (
-            <p className="text-sm text-missing" role="alert">
-              {state.error}
-            </p>
-          ) : null}
+          <div id="auth-error" className="min-h-5" aria-live="polite">
+            {state?.error ? (
+              <p className="text-sm text-missing" role="alert">{state.error}</p>
+            ) : null}
+          </div>
           <Button
             type="submit"
             disabled={pending}
-            className="w-full bg-seal-gradient text-white hover:opacity-95"
+            size="lg"
+            className="w-full"
           >
-            {pending ? "Signing in…" : "Sign in"}
+            {pending ? <><SealLoader size={18} />Signing in...</> : "Sign in"}
           </Button>
         </form>
-
-        <p className="text-center text-sm text-muted-foreground">
-          No account?{" "}
-          <Link
-            href="/signup"
-            className="text-seal-violet hover:underline"
-          >
-            Create one
-          </Link>
-        </p>
       </div>
-    </main>
+    </AuthFrame>
   );
 }

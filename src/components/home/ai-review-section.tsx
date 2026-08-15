@@ -24,14 +24,14 @@ export function AiReviewSection() {
       <div className={styles.aiReviewVisual} aria-label="ScopeSeal analyzing an email brief">
         <ThemeImage
           className={styles.aiReviewBack}
-          darkSrc="/images/home/inbox-extension-dark.png"
-          lightSrc="/images/home/inbox-extension-light.png"
+          darkSrc="/images/home/inbox-extension-dark.webp"
+          lightSrc="/images/home/inbox-extension-light.webp"
           alt="ScopeSeal browser extension ready to analyze a brief"
         />
         <ThemeImage
           className={styles.aiReviewFront}
-          darkSrc="/images/home/inbox-result-dark.png"
-          lightSrc="/images/home/inbox-result-light.png"
+          darkSrc="/images/home/inbox-result-dark.webp"
+          lightSrc="/images/home/inbox-result-light.webp"
           alt="ScopeSeal clarity report over the reviewed brief"
         />
       </div>

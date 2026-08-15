@@ -12,6 +12,9 @@ export async function signInAction(
   const email = String(formData.get("email") ?? "").toLowerCase().trim();
   const password = String(formData.get("password") ?? "");
   if (!email || !password) return { error: "Enter your email and password." };
+  if (email.length > 254 || password.length > 128) {
+    return { error: "Invalid email or password." };
+  }
 
   try {
     await signIn("credentials", { email, password, redirectTo: "/app" });

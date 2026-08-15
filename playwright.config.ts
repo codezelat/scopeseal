@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const port = process.env.PLAYWRIGHT_PORT ?? "3100";
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -8,7 +10,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:3001",
+    baseURL: `http://localhost:${port}`,
     trace: "on-first-retry",
     headless: true,
   },
@@ -19,8 +21,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm dev --port 3001",
-    url: "http://localhost:3001",
+    command: `source ~/.nvm/nvm.sh && pnpm dev --port ${port}`,
+    url: `http://localhost:${port}`,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
   },

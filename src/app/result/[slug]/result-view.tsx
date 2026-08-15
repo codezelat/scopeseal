@@ -1,45 +1,28 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import {
-  Copy,
-  Download,
-  Share2,
-  Plus,
-  AlertTriangle,
-  CheckCircle2,
-  Trash2,
-  ExternalLink,
-  Sparkles,
-  Loader2,
-} from "lucide-react";
+import { Check, Copy, Download, Plus, Share2, Sparkles, Trash2 } from "lucide-react";
 import type { AnalysisResult } from "@/lib/engine";
 import { resultToMarkdown } from "@/lib/export";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { SealScoreRing } from "@/components/brand/seal-score-ring";
 import { Reveal } from "@/components/animations/reveal";
-import { CountUp } from "@/components/animations/count-up";
+import { SealScoreRing } from "@/components/brand/seal-score-ring";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
-interface AiEnhanceResult {
-  rewrittenScope: string;
-  improvements: string[];
-}
-
+interface AiEnhanceResult { rewrittenScope: string; improvements: string[] }
 interface ResultViewProps {
   result: AnalysisResult;
   reviewId: string;
@@ -50,75 +33,28 @@ interface ResultViewProps {
   scopeText?: string;
 }
 
-const bandConfig: Record<
-  string,
-  { label: string; color: string; bg: string; desc: string }
-> = {
-  clear: {
-    label: "Clear Scope",
-    color: "text-emerald-600 dark:text-emerald-400",
-    bg: "bg-emerald-500/10",
-    desc: "Your scope covers the essentials well.",
-  },
-  review: {
-    label: "Needs Review",
-    color: "text-amber-600 dark:text-amber-400",
-    bg: "bg-amber-500/10",
-    desc: "Some important details are missing or vague.",
-  },
-  risky: {
-    label: "High Risk",
-    color: "text-rose-600 dark:text-rose-400",
-    bg: "bg-rose-500/10",
-    desc: "Significant gaps that could lead to scope creep.",
-  },
-};
+const bandConfig = {
+  clear: { label: "Clear scope", copy: "Ready to move forward.", color: "text-clear" },
+  review: { label: "Needs review", copy: "A few details need attention.", color: "text-risk" },
+  risky: { label: "High risk", copy: "Resolve key gaps before starting.", color: "text-missing" },
+} as const;
 
-const severityConfig: Record<
-  string,
-  { label: string; color: string; bg: string }
-> = {
-  high: {
-    label: "High",
-    color: "text-rose-600 dark:text-rose-400",
-    bg: "bg-rose-500/10",
-  },
-  medium: {
-    label: "Medium",
-    color: "text-amber-600 dark:text-amber-400",
-    bg: "bg-amber-500/10",
-  },
-  low: {
-    label: "Low",
-    color: "text-yellow-600 dark:text-yellow-400",
-    bg: "bg-yellow-500/10",
-  },
-};
-
-function getScoreColor(score: number): string {
-  if (score >= 70) return "text-emerald-600 dark:text-emerald-400";
-  if (score >= 40) return "text-amber-600 dark:text-amber-400";
-  return "text-rose-600 dark:text-rose-400";
+function scoreColor(score: number): string {
+  if (score >= 70) return "text-clear";
+  if (score >= 40) return "text-risk";
+  return "text-missing";
 }
 
-function getProgressColor(score: number): string {
-  if (score >= 70) return "bg-emerald-500";
-  if (score >= 40) return "bg-amber-500";
-  return "bg-rose-500";
+function progressColor(score: number): string {
+  if (score >= 70) return "bg-clear";
+  if (score >= 40) return "bg-risk";
+  return "bg-missing";
 }
 
-function highlightPhrase(text: string, phrase: string): React.ReactNode {
-  const idx = text.toLowerCase().indexOf(phrase.toLowerCase());
-  if (idx === -1) return text;
-  return (
-    <>
-      {text.slice(0, idx)}
-      <mark className="rounded bg-amber-200/50 px-0.5 text-amber-900 dark:bg-amber-800/40 dark:text-amber-200">
-        {text.slice(idx, idx + phrase.length)}
-      </mark>
-      {text.slice(idx + phrase.length)}
-    </>
-  );
+function severityColor(severity: string): string {
+  if (severity === "high") return "text-missing";
+  if (severity === "medium") return "text-risk";
+  return "text-muted-foreground";
 }
 
 export function ResultView({
@@ -131,521 +67,207 @@ export function ResultView({
   scopeText = "",
 }: ResultViewProps) {
   const reduced = useReducedMotion();
-  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<AiEnhanceResult | null>(null);
-  const [aiDialogOpen, setAiDialogOpen] = useState(false);
-  const band = bandConfig[result.band] ?? bandConfig.risky;
-
-  const origin =
-    typeof window !== "undefined" ? window.location.origin : "";
-  const shareUrl = `${origin}/result/${shareSlug}`;
-
+  const [aiOpen, setAiOpen] = useState(false);
+  const band = bandConfig[result.band];
   const markdown = resultToMarkdown(result, projectType);
 
-  const copyToClipboard = useCallback(
-    async (text: string, field: string) => {
-      try {
-        await navigator.clipboard.writeText(text);
-        setCopiedField(field);
-        toast.success("Copied to clipboard");
-        setTimeout(() => setCopiedField(null), 2000);
-      } catch {
-        toast.error("Failed to copy");
-      }
-    },
-    [],
-  );
+  const copyText = useCallback(async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(field);
+      toast.success("Copied");
+      window.setTimeout(() => setCopied(null), 1600);
+    } catch {
+      toast.error("Could not copy");
+    }
+  }, []);
 
-  const downloadMarkdown = useCallback(() => {
-    const blob = new Blob([markdown], { type: "text/markdown" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `scopeseal-report-${shareSlug}.md`;
-    a.click();
+  function downloadReport() {
+    const url = URL.createObjectURL(new Blob([markdown], { type: "text/markdown" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `scopeseal-${shareSlug}.md`;
+    link.click();
     URL.revokeObjectURL(url);
-  }, [markdown, shareSlug]);
+  }
 
-  const copyShareLink = useCallback(() => {
-    copyToClipboard(shareUrl, "share");
-  }, [copyToClipboard, shareUrl]);
-
-  const handleAiEnhance = useCallback(async () => {
-    if (!scopeText) return;
+  async function enhanceScope() {
     setAiLoading(true);
     try {
-      const res = await fetch("/api/analyze/enhance", {
+      const response = await fetch("/api/analyze/enhance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scopeText, projectType }),
       });
-      if (!res.ok) {
-        const data = await res.json();
-        toast.error(data.error ?? "AI enhancement failed");
-      } else {
-        const data: AiEnhanceResult = await res.json();
-        setAiResult(data);
-        setAiDialogOpen(true);
-      }
+      const data = (await response.json()) as AiEnhanceResult & { error?: string };
+      if (!response.ok) return toast.error(data.error ?? "AI enhancement failed");
+      setAiResult(data);
+      setAiOpen(true);
     } catch {
       toast.error("AI enhancement failed");
     } finally {
       setAiLoading(false);
     }
-  }, [scopeText, projectType]);
+  }
 
-  const sortedMissing = [...result.missing].sort((a, b) => {
-    const order = { high: 0, medium: 1, low: 2 };
-    return (order[a.severity] ?? 3) - (order[b.severity] ?? 3);
-  });
+  async function deleteReview() {
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/reviews/${reviewId}`, { method: "DELETE" });
+      if (!response.ok) return toast.error("Could not delete review");
+      window.location.assign("/app/reviews");
+    } catch {
+      toast.error("Could not delete review");
+    } finally {
+      setDeleting(false);
+    }
+  }
 
-  const outputTabs = [
-    {
-      id: "internal",
-      label: "Internal Risk Summary",
-      content: result.outputs.internalRiskSummary,
-    },
-    {
-      id: "client",
-      label: "Client-Friendly Note",
-      content: result.outputs.clientFriendlyNote,
-    },
-    {
-      id: "proposal",
-      label: "Proposal Addition",
-      content: result.outputs.proposalAdditionalInfo,
-    },
-    {
-      id: "rewritten",
-      label: "Rewritten Scope",
-      content: result.outputs.rewrittenScope,
-    },
-  ];
+  const outputs = [
+    ["internal", "Risk summary", result.outputs.internalRiskSummary],
+    ["client", "Client note", result.outputs.clientFriendlyNote],
+    ["proposal", "Proposal", result.outputs.proposalAdditionalInfo],
+    ["rewrite", "Rewritten", result.outputs.rewrittenScope],
+  ] as const;
 
   return (
-    <div className="space-y-12">
-      {/* Score hero */}
+    <div>
       <Reveal>
-        <section className="flex flex-col items-center text-center">
-          <SealScoreRing
-            score={result.score}
-            band={result.band}
-            size={220}
-            className="mb-4"
-          />
-          <h1 className={cn("font-display text-2xl font-bold", band.color)}>
-            {band.label}
-          </h1>
-          <p className="mt-2 max-w-md text-muted-foreground">
-            Your scope scores{" "}
-            <span className={cn("font-mono font-bold", getScoreColor(result.score))}>
-              <CountUp value={result.score} />
-            </span>
-            /100 — {band.desc}
-          </p>
-          <div className="mt-3 flex items-center gap-2">
-            <Badge variant="secondary" className="font-mono text-xs">
-              {result.wordCount} words
-            </Badge>
-            <Badge variant="outline" className="text-xs capitalize">
-              {projectType}
-            </Badge>
+        <section className="grid items-center gap-8 border-b border-border pb-10 md:grid-cols-[240px_1fr] md:gap-12">
+          <div className="flex justify-center md:justify-start">
+            <SealScoreRing score={result.score} band={result.band} size={190} />
           </div>
-          {result.sensitiveWarning && (
-            <div className="mt-4 flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
-              <AlertTriangle className="size-4 shrink-0" />
-              This scope may contain sensitive or confidential content.
-            </div>
-          )}
+          <div className="text-center md:text-left">
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Scope analysis</p>
+            <h1 className={cn("mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl", band.color)}>{band.label}</h1>
+            <p className="mt-3 text-muted-foreground">{band.copy}</p>
+            <p className="mt-5 text-sm capitalize text-muted-foreground">{projectType.replaceAll("-", " ")} · {result.wordCount} words</p>
+          </div>
         </section>
       </Reveal>
 
-      {/* Quick actions */}
-      <Reveal delay={0.1}>
-        <section className="flex flex-wrap items-center justify-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => copyToClipboard(markdown, "report")}
-            className="gap-1.5"
-          >
-            <Copy className="size-3.5" />
-            {copiedField === "report" ? "Copied!" : "Copy report"}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={downloadMarkdown}
-            className="gap-1.5"
-          >
-            <Download className="size-3.5" />
-            Download .md
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={copyShareLink}
-            className="gap-1.5"
-          >
-            {copiedField === "share" ? (
-              <CheckCircle2 className="size-3.5" />
-            ) : (
-              <Share2 className="size-3.5" />
-            )}
-            {copiedField === "share" ? "Link copied!" : "Share link"}
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1.5" asChild>
-            <a href="/analyze">
-              <Plus className="size-3.5" />
-              New analysis
-            </a>
-          </Button>
-          {aiEnabled && scopeText && (
-            <Button
-              size="sm"
-              onClick={handleAiEnhance}
-              disabled={aiLoading}
-              className="gap-1.5 bg-seal-gradient text-white"
-            >
-              {aiLoading ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <Sparkles className="size-3.5" />
-              )}
-              {aiLoading ? "Enhancing..." : "Enhance with AI"}
-            </Button>
-          )}
-          {isOwner && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={async () => {
-                try {
-                  const res = await fetch(`/api/reviews/${reviewId}`, {
-                    method: "DELETE",
-                  });
-                  if (res.ok) {
-                    toast.success("Review deleted");
-                    window.location.href = "/app/reviews";
-                  } else {
-                    toast.error("Failed to delete");
-                  }
-                } catch {
-                  toast.error("Failed to delete");
-                }
-              }}
-              className="gap-1.5 text-destructive hover:text-destructive"
-            >
-              <Trash2 className="size-3.5" />
-              Delete
-            </Button>
-          )}
-        </section>
-      </Reveal>
+      {result.sensitiveWarning ? (
+        <p className="mt-5 border-l-2 border-risk pl-3 text-sm text-muted-foreground">This brief may contain sensitive content.</p>
+      ) : null}
 
-      <Separator />
+      <div className="flex flex-wrap gap-2 border-b border-border py-5" aria-label="Result actions">
+        <Button variant="outline" size="sm" onClick={() => copyText(markdown, "report")}><Copy className="size-4" />{copied === "report" ? "Copied" : "Copy"}</Button>
+        <Button variant="outline" size="sm" onClick={downloadReport}><Download className="size-4" />Download</Button>
+        <Button variant="outline" size="sm" onClick={() => copyText(window.location.href, "share")}><Share2 className="size-4" />{copied === "share" ? "Copied" : "Share"}</Button>
+        <Button variant="outline" size="sm" asChild><a href="/analyze"><Plus className="size-4" />New</a></Button>
+        {aiEnabled && scopeText ? <Button size="sm" onClick={enhanceScope} disabled={aiLoading}><Sparkles className="size-4" />{aiLoading ? "Enhancing..." : "Improve with AI"}</Button> : null}
+        {isOwner ? (
+          <Dialog>
+            <DialogTrigger asChild><Button variant="ghost" size="sm" className="ml-auto text-destructive hover:text-destructive"><Trash2 className="size-4" />Delete</Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Delete this review?</DialogTitle><DialogDescription>This cannot be undone.</DialogDescription></DialogHeader>
+              <DialogFooter><DialogClose asChild><Button variant="outline" disabled={deleting}>Cancel</Button></DialogClose><Button variant="destructive" onClick={deleteReview} disabled={deleting}>{deleting ? "Deleting..." : "Delete"}</Button></DialogFooter>
+            </DialogContent>
+          </Dialog>
+        ) : null}
+      </div>
 
-      {/* Category breakdown */}
-      <Reveal delay={0.15}>
-        <section>
-          <h2 className="mb-6 font-display text-xl font-semibold">
-            Category Breakdown
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {result.categories.map((cat, i) => (
-              <motion.div
-                key={cat.id}
-                initial={reduced ? {} : { opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.4,
-                  delay: reduced ? 0 : i * 0.08,
-                  ease: "easeOut",
-                }}
-              >
-                <Card className="p-4">
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-medium">{cat.label}</span>
-                    <span
-                      className={cn(
-                        "font-mono text-lg font-bold",
-                        getScoreColor(cat.score),
-                      )}
-                    >
-                      <CountUp value={cat.score} />
-                    </span>
-                  </div>
-                  <motion.div
-                    initial={reduced ? {} : { scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{
-                      duration: 0.6,
-                      delay: reduced ? 0 : 0.3 + i * 0.08,
-                      ease: "easeOut",
-                    }}
-                    style={{ transformOrigin: "left" }}
-                  >
-                    <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
-                      <div
-                        className={cn(
-                          "h-full rounded-full transition-all",
-                          getProgressColor(cat.score),
-                        )}
-                        style={{ width: `${cat.score}%` }}
+      <div className="grid gap-12 py-12 lg:grid-cols-[1fr_0.92fr]">
+        <Reveal>
+          <section aria-labelledby="breakdown-heading">
+            <h2 id="breakdown-heading" className="mb-5 font-display text-xl font-semibold">Breakdown</h2>
+            <div className="border-t border-border">
+              {result.categories.map((category, index) => (
+                <div key={category.id} className="grid grid-cols-[1fr_52px] items-center gap-4 border-b border-border py-4">
+                  <div>
+                    <div className="mb-2 text-sm font-medium">{category.label}</div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                      <motion.div
+                        className={cn("h-full rounded-full", progressColor(category.score))}
+                        initial={reduced ? { width: `${category.score}%` } : { width: 0 }}
+                        whileInView={{ width: `${category.score}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: reduced ? 0 : 0.55, delay: reduced ? 0 : index * 0.04 }}
                       />
                     </div>
-                  </motion.div>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      Weight: {cat.weight.toFixed(1)}x
-                    </span>
-                    {cat.note && (
-                      <span className="text-xs text-muted-foreground">
-                        {cat.note}
-                      </span>
-                    )}
                   </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-      </Reveal>
-
-      {/* Missing items */}
-      {sortedMissing.length > 0 && (
-        <Reveal delay={0.2}>
-          <section>
-            <div className="mb-4 flex items-center gap-2">
-              <h2 className="font-display text-xl font-semibold">
-                Missing from your scope
-              </h2>
-              <Badge variant="secondary" className="font-mono">
-                {sortedMissing.length}
-              </Badge>
-            </div>
-            <div className="space-y-3">
-              {sortedMissing.map((item, i) => {
-                const sev = severityConfig[item.severity] ?? severityConfig.medium;
-                return (
-                  <Reveal key={item.id} delay={i * 0.05}>
-                    <Card className="p-4">
-                      <div className="flex items-start gap-3">
-                        <Badge
-                          variant="secondary"
-                          className={cn(
-                            "mt-0.5 shrink-0 text-xs",
-                            sev.bg,
-                            sev.color,
-                          )}
-                        >
-                          {sev.label}
-                        </Badge>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-medium">{item.label}</p>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            {item.guidance}
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-                  </Reveal>
-                );
-              })}
-            </div>
-          </section>
-        </Reveal>
-      )}
-
-      {/* Risky phrasing */}
-      {result.risks.length > 0 && (
-        <Reveal delay={0.25}>
-          <section>
-            <div className="mb-4 flex items-center gap-2">
-              <h2 className="font-display text-xl font-semibold">
-                Risky wording detected
-              </h2>
-              <Badge variant="secondary" className="font-mono">
-                {result.risks.length}
-              </Badge>
-            </div>
-            <div className="space-y-3">
-              {result.risks.map((risk, i) => {
-                const sev =
-                  severityConfig[risk.severity] ?? severityConfig.medium;
-                return (
-                  <Reveal key={`${risk.phrase}-${i}`} delay={i * 0.05}>
-                    <Card className="p-4">
-                      <div className="flex items-start gap-3">
-                        <Badge
-                          variant="secondary"
-                          className={cn(
-                            "mt-0.5 shrink-0 text-xs",
-                            sev.bg,
-                            sev.color,
-                          )}
-                        >
-                          {sev.label}
-                        </Badge>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium">
-                              &ldquo;{risk.phrase}&rdquo;
-                            </p>
-                            <span className="font-mono text-xs text-muted-foreground">
-                              x{risk.count}
-                            </span>
-                          </div>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            {highlightPhrase(risk.context, risk.phrase)}
-                          </p>
-                          <p className="mt-2 text-sm text-muted-foreground">
-                            {risk.guidance}
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-                  </Reveal>
-                );
-              })}
-            </div>
-          </section>
-        </Reveal>
-      )}
-
-      {/* Suggestions */}
-      {result.suggestions.length > 0 && (
-        <Reveal delay={0.3}>
-          <section>
-            <h2 className="mb-4 font-display text-xl font-semibold">
-              Recommended actions
-            </h2>
-            <div className="space-y-2">
-              {result.suggestions.map((suggestion, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 rounded-lg border bg-card p-3"
-                >
-                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-500" />
-                  <p className="text-sm">{suggestion}</p>
+                  <span className={cn("text-right font-mono text-lg font-semibold tabular-nums", scoreColor(category.score))}>{category.score}</span>
                 </div>
               ))}
             </div>
           </section>
         </Reveal>
-      )}
 
-      <Separator />
-
-      {/* Copy-ready outputs */}
-      <Reveal delay={0.35}>
-        <section>
-          <h2 className="mb-4 font-display text-xl font-semibold">
-            Copy-ready outputs
-          </h2>
-          <Tabs defaultValue="internal">
-            <TabsList variant="line" className="mb-4 flex-wrap">
-              {outputTabs.map((tab) => (
-                <TabsTrigger key={tab.id} value={tab.id}>
-                  {tab.label}
-                </TabsTrigger>
+        <Reveal delay={0.08}>
+          <section aria-labelledby="findings-heading">
+            <h2 id="findings-heading" className="mb-5 font-display text-xl font-semibold">Findings</h2>
+            <div className="border-t border-border">
+              {result.missing.length === 0 && result.risks.length === 0 ? <p className="border-b border-border py-5 text-sm text-muted-foreground">No major gaps detected.</p> : null}
+              {result.missing.map((item) => (
+                <details key={item.id} className="group border-b border-border py-4">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    <span>{item.label}</span><span className={cn("text-xs capitalize", severityColor(item.severity))}>{item.severity}</span>
+                  </summary>
+                  <p className="pt-3 text-sm leading-6 text-muted-foreground">{item.guidance}</p>
+                </details>
               ))}
+              {result.risks.map((risk, index) => (
+                <details key={`${risk.phrase}-${index}`} className="group border-b border-border py-4">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    <span>&ldquo;{risk.phrase}&rdquo;</span><span className={cn("text-xs capitalize", severityColor(risk.severity))}>{risk.severity}</span>
+                  </summary>
+                  <p className="pt-3 text-sm leading-6 text-muted-foreground">{risk.guidance}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+        </Reveal>
+      </div>
+
+      {result.suggestions.length > 0 ? (
+        <Reveal>
+          <section className="border-y border-border py-8" aria-labelledby="actions-heading">
+            <h2 id="actions-heading" className="mb-5 font-display text-xl font-semibold">Next steps</h2>
+            <ol className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+              {result.suggestions.slice(0, 4).map((suggestion, index) => <li key={suggestion} className="flex gap-3 text-sm leading-6"><span className="font-mono text-muted-foreground">{String(index + 1).padStart(2, "0")}</span><span>{suggestion}</span></li>)}
+            </ol>
+            {result.suggestions.length > 4 ? (
+              <details className="mt-6 border-t border-border pt-4">
+                <summary className="w-fit cursor-pointer list-none text-sm font-semibold text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring">Show {result.suggestions.length - 4} more</summary>
+                <ol className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+                  {result.suggestions.slice(4).map((suggestion, index) => <li key={suggestion} className="flex gap-3 text-sm leading-6"><span className="font-mono text-muted-foreground">{String(index + 5).padStart(2, "0")}</span><span>{suggestion}</span></li>)}
+                </ol>
+              </details>
+            ) : null}
+          </section>
+        </Reveal>
+      ) : null}
+
+      <Reveal>
+        <section className="pt-12" aria-labelledby="outputs-heading">
+          <h2 id="outputs-heading" className="mb-5 font-display text-xl font-semibold">Ready to use</h2>
+          <Tabs defaultValue="internal">
+            <TabsList variant="line" className="mb-4 h-auto max-w-full justify-start overflow-x-auto">
+              {outputs.map(([id, label]) => <TabsTrigger key={id} value={id}>{label}</TabsTrigger>)}
             </TabsList>
-            {outputTabs.map((tab) => (
-              <TabsContent key={tab.id} value={tab.id}>
-                <Card className="relative p-4">
-                  <pre className="max-h-80 overflow-auto whitespace-pre-wrap font-mono text-sm leading-relaxed">
-                    {tab.content}
-                  </pre>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      copyToClipboard(tab.content, `output-${tab.id}`)
-                    }
-                    className="absolute top-3 right-3 gap-1.5"
-                  >
-                    <Copy className="size-3.5" />
-                    {copiedField === `output-${tab.id}` ? "Copied!" : "Copy"}
+            {outputs.map(([id, , content]) => (
+              <TabsContent key={id} value={id}>
+                <div className="relative border border-border bg-card p-5 pr-16">
+                  <p className="whitespace-pre-wrap text-sm leading-7">{content}</p>
+                  <Button variant="ghost" size="icon-sm" className="absolute right-3 top-3" onClick={() => copyText(content, id)} aria-label={`Copy ${id} output`}>
+                    {copied === id ? <Check className="size-4" /> : <Copy className="size-4" />}
                   </Button>
-                </Card>
+                </div>
               </TabsContent>
             ))}
           </Tabs>
         </section>
       </Reveal>
 
-      {/* Footer CTA */}
-      <Reveal delay={0.4}>
-        <section className="flex flex-col items-center gap-4 rounded-2xl border bg-card p-8 text-center">
-          <h3 className="font-display text-lg font-semibold">
-            Want to analyze another scope?
-          </h3>
-          <p className="max-w-md text-sm text-muted-foreground">
-            Test as many project briefs as you like. Each analysis gives you a
-            fresh score and actionable insights.
-          </p>
-          <Button className="bg-seal-gradient text-white" asChild>
-            <a href="/analyze">
-              <ExternalLink className="mr-1.5 size-4" />
-              Analyze a new scope
-            </a>
-          </Button>
-        </section>
-      </Reveal>
-
-      {/* AI Enhancement dialog */}
-      <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="size-4 text-violet-500" />
-              AI-Enhanced Scope
-              <Badge variant="secondary" className="ml-1 text-xs">AI</Badge>
-            </DialogTitle>
-            <DialogDescription>
-              ScopeSeal AI has rewritten your scope for clarity and completeness.
-            </DialogDescription>
-          </DialogHeader>
-          {aiResult && (
-            <div className="space-y-4">
-              <div>
-                <h4 className="mb-2 text-sm font-medium">Rewritten Scope</h4>
-                <pre className="max-h-60 overflow-auto whitespace-pre-wrap rounded-lg border bg-muted p-3 font-mono text-sm leading-relaxed">
-                  {aiResult.rewrittenScope}
-                </pre>
-              </div>
-              {aiResult.improvements.length > 0 && (
-                <div>
-                  <h4 className="mb-2 text-sm font-medium">Improvements</h4>
-                  <ul className="space-y-1">
-                    {aiResult.improvements.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm">
-                        <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-          <DialogFooter>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (aiResult) {
-                  copyToClipboard(aiResult.rewrittenScope, "ai-rewritten");
-                }
-              }}
-              className="gap-1.5"
-            >
-              <Copy className="size-3.5" />
-              {copiedField === "ai-rewritten" ? "Copied!" : "Copy"}
-            </Button>
-          </DialogFooter>
+      <Dialog open={aiOpen} onOpenChange={setAiOpen}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader><DialogTitle>Improved scope</DialogTitle><DialogDescription>A clearer version of your brief.</DialogDescription></DialogHeader>
+          {aiResult ? <div className="max-h-[60vh] overflow-y-auto"><p className="whitespace-pre-wrap text-sm leading-7">{aiResult.rewrittenScope}</p>{aiResult.improvements.length > 0 ? <ul className="mt-5 border-t border-border pt-4">{aiResult.improvements.map((item) => <li key={item} className="flex gap-2 py-1 text-sm"><Check className="mt-0.5 size-4 flex-none text-clear" />{item}</li>)}</ul> : null}</div> : null}
+          <DialogFooter><Button variant="outline" onClick={() => aiResult && copyText(aiResult.rewrittenScope, "ai")}>{copied === "ai" ? "Copied" : "Copy"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

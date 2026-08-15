@@ -18,8 +18,8 @@ export function ExtensionCtaSection() {
       </div>
       <ThemeImage
         className={styles.extensionVisual}
-        darkSrc="/images/home/extension-dark.png"
-        lightSrc="/images/home/extension-light.png"
+        darkSrc="/images/home/extension-dark.webp"
+        lightSrc="/images/home/extension-light.webp"
         alt="ScopeSeal Chrome extension analyzing a brief"
       />
     </HomeMotionSection>

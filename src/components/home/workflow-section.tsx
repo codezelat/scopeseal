@@ -7,22 +7,22 @@ const steps = [
     number: "01",
     title: "Paste Your Brief",
     description: "Paste a project brief, client email, or proposal",
-    darkSrc: "/images/home/workflow-paste-dark.png",
-    lightSrc: "/images/home/workflow-paste-light.png",
+    darkSrc: "/images/home/workflow-paste-dark.webp",
+    lightSrc: "/images/home/workflow-paste-light.webp",
   },
   {
     number: "02",
     title: "AI Analysis",
     description: "AI checks your brief for missing requirements",
-    darkSrc: "/images/home/workflow-analyze-dark.png",
-    lightSrc: "/images/home/workflow-analyze-light.png",
+    darkSrc: "/images/home/workflow-analyze-dark.webp",
+    lightSrc: "/images/home/workflow-analyze-light.webp",
   },
   {
     number: "03",
     title: "Clarity Report",
     description: "Get a clear report with your score, improvement.",
-    darkSrc: "/images/home/workflow-report-dark.png",
-    lightSrc: "/images/home/workflow-report-light.png",
+    darkSrc: "/images/home/workflow-report-dark.webp",
+    lightSrc: "/images/home/workflow-report-light.webp",
   },
 ] as const;
 

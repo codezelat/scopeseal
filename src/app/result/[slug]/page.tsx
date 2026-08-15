@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { getCurrentUser } from "@/auth";
 import { db } from "@/lib/db";
 import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
@@ -33,9 +34,10 @@ export async function generateMetadata({
   const { slug } = await params;
   const review = await db.review.findUnique({
     where: { shareSlug: slug },
-    select: { score: true, band: true, projectType: true },
+    select: { score: true, band: true, projectType: true, isShared: true },
   });
   if (!review) return { title: "Result not found" };
+  if (!review.isShared) return { title: "Private result" };
 
   const bandLabel =
     review.band === "clear"
@@ -56,37 +58,38 @@ export async function generateMetadata({
 
 export default async function ResultPage({ params }: PageProps) {
   const { slug } = await params;
-  const review = await db.review.findUnique({
-    where: { shareSlug: slug },
-  });
-
-  if (!review) notFound();
-
-  const [result, aiEnabled] = await Promise.all([
-    Promise.resolve({
-      score: review.score,
-      band: review.band as AnalysisResult["band"],
-      categories: review.categories as unknown as CategoryResult[],
-      missing: review.missing as unknown as MissingItem[],
-      risks: review.risks as unknown as RiskHit[],
-      suggestions: review.suggestions as unknown as string[],
-      outputs: review.outputs as unknown as AnalysisResult["outputs"],
-      wordCount: review.inputWordCount,
-      sensitiveWarning: false,
-    }),
+  const [review, user, aiEnabled] = await Promise.all([
+    db.review.findUnique({ where: { shareSlug: slug } }),
+    getCurrentUser(),
     getAiEnabled(),
   ]);
+
+  if (!review) notFound();
+  const isOwner = Boolean(user && review.userId === user.id);
+  if (!review.isShared && !isOwner) notFound();
+
+  const result: AnalysisResult = {
+    score: review.score,
+    band: review.band as AnalysisResult["band"],
+    categories: review.categories as unknown as CategoryResult[],
+    missing: review.missing as unknown as MissingItem[],
+    risks: review.risks as unknown as RiskHit[],
+    suggestions: review.suggestions as unknown as string[],
+    outputs: review.outputs as unknown as AnalysisResult["outputs"],
+    wordCount: review.inputWordCount,
+    sensitiveWarning: false,
+  };
 
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
+      <main className="mx-auto max-w-5xl px-4 py-10 sm:px-8 sm:py-14">
         <ResultView
           result={result}
           reviewId={review.id}
           shareSlug={review.shareSlug}
           projectType={review.projectType}
-          isOwner={false}
+          isOwner={isOwner}
           aiEnabled={aiEnabled}
           scopeText={review.inputText}
         />

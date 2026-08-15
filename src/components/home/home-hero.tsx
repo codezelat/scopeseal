@@ -10,7 +10,7 @@ export function HomeHero() {
       <div className={styles.heroGrid} aria-hidden="true">
         <Image
           className={styles.heroGridImage}
-          src="/images/home/grid-dark.png"
+          src="/images/home/grid-dark.webp"
           alt=""
           fill
           priority

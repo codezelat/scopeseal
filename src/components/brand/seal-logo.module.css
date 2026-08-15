@@ -1,0 +1,38 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: inherit;
+  font-family: var(--font-sora), sans-serif;
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+
+.mark {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  overflow: hidden;
+  background: linear-gradient(90deg, #1267ed 0 49%, #4f8eff 49% 100%);
+  clip-path: polygon(50% 0, 93% 16%, 88% 64%, 50% 100%, 12% 64%, 7% 16%);
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mark::after {
+  width: 1px;
+  height: 72%;
+  background: rgb(255 255 255 / 78%);
+  content: "";
+}
+
+.logo:hover .mark {
+  transform: rotate(-4deg) scale(1.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark {
+    transition: none;
+  }
+}

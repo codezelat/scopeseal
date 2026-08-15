@@ -24,7 +24,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { SealLoader } from "@/components/brand/seal-loader";
-import { MagneticButton } from "@/components/animations/magnetic-button";
 import { toast } from "sonner";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -80,11 +79,19 @@ interface AnalyzeResponse {
   code?: string;
 }
 
-export function AnalyzeClient() {
+interface AnalyzeClientProps {
+  initialText?: string;
+  initialProjectType?: ProjectType;
+}
+
+export function AnalyzeClient({
+  initialText = "",
+  initialProjectType = "website",
+}: AnalyzeClientProps) {
   const router = useRouter();
   const reduced = useReducedMotion();
-  const [selectedType, setSelectedType] = useState<ProjectType>("website");
-  const [inputText, setInputText] = useState("");
+  const [selectedType, setSelectedType] = useState<ProjectType>(initialProjectType);
+  const [inputText, setInputText] = useState(initialText);
   const [loading, setLoading] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
 
@@ -130,11 +137,11 @@ export function AnalyzeClient() {
   }, [selectedType]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Project type selector */}
       <section>
-        <h2 className="mb-4 text-lg font-semibold">Project type</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <h2 className="mb-4 font-display text-xl font-semibold">Project type</h2>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {PROJECT_TYPE_OPTIONS.map((opt) => {
             const Icon = iconMap[projectIcons[opt.value]] ?? Briefcase;
             const isSelected = selectedType === opt.value;
@@ -144,17 +151,18 @@ export function AnalyzeClient() {
                 type="button"
                 onClick={() => setSelectedType(opt.value)}
                 className={cn(
-                  "relative flex flex-col items-start gap-2 rounded-xl border p-4 text-left transition-colors",
+                  "relative min-h-32 flex flex-col items-start gap-3 rounded-md border p-4 text-left transition-[border-color,background-color,transform]",
                   isSelected
-                    ? "border-seal-violet bg-seal-gradient/10 glow-seal"
-                    : "border-border bg-card hover:border-muted-foreground/30",
+                    ? "border-primary bg-primary/[0.08]"
+                    : "border-border bg-card hover:border-muted-foreground/60",
                 )}
                 whileHover={reduced ? {} : { scale: 1.02 }}
                 whileTap={reduced ? {} : { scale: 0.98 }}
+                aria-pressed={isSelected}
               >
                 {isSelected && (
                   <motion.div
-                    className="absolute top-2 right-2 flex size-5 items-center justify-center rounded-full bg-seal-gradient text-white"
+                    className="absolute top-3 right-3 flex size-5 items-center justify-center rounded-full bg-primary text-white"
                     initial={reduced ? {} : { scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: "spring", bounce: 0.5 }}
@@ -165,7 +173,7 @@ export function AnalyzeClient() {
                 <Icon
                   className={cn(
                     "size-5",
-                    isSelected ? "text-seal-violet" : "text-muted-foreground",
+                    isSelected ? "text-primary" : "text-muted-foreground",
                   )}
                 />
                 <div>
@@ -192,7 +200,7 @@ export function AnalyzeClient() {
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Your scope</h2>
           <div className="flex items-center gap-3">
-            <span className="text-xs tabular-nums text-muted-foreground">
+            <span className="font-mono text-xs tabular-nums text-muted-foreground">
               {wordCount} words · {inputText.length} chars
             </span>
             <Button
@@ -210,32 +218,31 @@ export function AnalyzeClient() {
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           placeholder="Paste your project brief, scope of work, or proposal here…"
-          className="min-h-[240px] resize-y text-sm"
+          maxLength={50_000}
+          className="min-h-[220px] resize-y text-sm leading-6 sm:min-h-[280px]"
           aria-label="Scope text input"
         />
       </section>
 
       {/* Analyze button */}
-      <div className="flex flex-col items-center gap-4">
-        <MagneticButton>
+      <div className="flex flex-col items-stretch gap-3 sm:items-end">
           <Button
             size="lg"
             onClick={handleAnalyze}
             disabled={loading || inputText.trim().length < 50}
-            className="bg-seal-gradient px-8 text-white shadow-lg hover:opacity-90"
+            className="w-full px-8 sm:w-auto"
           >
             {loading ? (
               <>
                 <SealLoader size={20} />
-                Analyzing…
+                Analyzing...
               </>
             ) : (
               "Analyze scope"
             )}
           </Button>
-        </MagneticButton>
         {inputText.trim().length > 0 && inputText.trim().length < 50 && (
-          <p className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+          <p className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 sm:self-end">
             <AlertTriangle className="size-3.5" />
             At least 50 characters required ({50 - inputText.trim().length} more
             needed)
@@ -244,7 +251,7 @@ export function AnalyzeClient() {
       </div>
 
       {/* What we check */}
-      <section className="border-t pt-8">
+      <section className="border-t border-border pt-8">
         <button
           type="button"
           onClick={() => setShowCategories(!showCategories)}
@@ -260,7 +267,7 @@ export function AnalyzeClient() {
         </button>
         {showCategories && (
           <motion.div
-            className="mt-4 grid gap-3 sm:grid-cols-3"
+            className="mt-4 grid border-t border-l border-border sm:grid-cols-3"
             initial={reduced ? {} : { opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             transition={{ duration: 0.3 }}
@@ -278,7 +285,7 @@ export function AnalyzeClient() {
             ].map((cat) => (
               <div
                 key={cat.label}
-                className="rounded-lg border bg-card p-3"
+                className="border-r border-b border-border bg-card p-4"
               >
                 <p className="text-sm font-medium">{cat.label}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{cat.desc}</p>

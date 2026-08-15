@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId } from "react";
+import { useEffect } from "react";
 import { motion, useMotionValue, useTransform, animate, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -61,8 +61,6 @@ export function SealScoreRing({
   duration = 1.4,
   className,
 }: SealScoreRingProps) {
-  const id = useId();
-  const gradId = `seal-ring-${id}`;
   const reduced = useReducedMotion();
 
   const band = bandProp ?? getBand(score);
@@ -88,12 +86,6 @@ export function SealScoreRing({
         viewBox={`0 0 ${size} ${size}`}
         className="rotate-[-90deg]"
       >
-        <defs>
-          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="var(--seal-violet)" />
-            <stop offset="100%" stopColor="var(--seal-indigo)" />
-          </linearGradient>
-        </defs>
         {/* Track */}
         <circle
           cx={center}
@@ -110,7 +102,7 @@ export function SealScoreRing({
           cy={center}
           r={radius}
           fill="none"
-          stroke={`url(#${gradId})`}
+          stroke={colors.stroke}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
