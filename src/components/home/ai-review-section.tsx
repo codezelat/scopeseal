@@ -13,7 +13,7 @@ export function AiReviewSection() {
   return (
     <HomeMotionSection className={styles.aiReviewSection} aria-labelledby="ai-review-heading">
       <div className={styles.aiReviewCopy}>
-        <h2 id="ai-review-heading">Let AI Review Every Brief For You</h2>
+        <h2 id="ai-review-heading">Review Every Brief Before Kickoff</h2>
         <p>ScopeSeal analyzes every project brief and highlights unclear requirements.</p>
         <ul>
           {reviewPoints.map((point) => (

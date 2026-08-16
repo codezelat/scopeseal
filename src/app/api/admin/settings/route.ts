@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/auth";
+import { readJsonBody } from "@/lib/http";
 
 export async function GET() {
   try {
@@ -41,7 +42,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const raw = await req.json();
+    const raw = await readJsonBody(req);
     const parsed = patchSchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json(

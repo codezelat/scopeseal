@@ -16,7 +16,7 @@ test.describe("Landing page", () => {
     await page.goto("/");
     await expect(page).toHaveTitle(/ScopeSeal/);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(/Seal the gaps/i);
-    for (const feature of ["Clarity Score", "Missing Item Detection", "Risk Detection", "AI Suggestions"]) {
+    for (const feature of ["Clarity Score", "Missing Item Detection", "Risk Detection", "Clear Suggestions"]) {
       await expect(page.getByText(feature).first()).toBeVisible();
     }
   });
@@ -111,10 +111,10 @@ test.describe("QA scenarios from SPEC", () => {
       await page.goto("/analyze");
       await page.getByLabel("Scope text input").fill(scenario.text);
       await page.getByRole("button", { name: "Analyze scope" }).click();
-      // Wait for processing
-      await page.waitForTimeout(5000);
-      // Page should not crash
-      await expect(page.locator("body")).toBeVisible();
+      await expect(page).toHaveURL(/\/result\//, { timeout: 15_000 });
+      await expect(
+        page.getByRole("heading", { name: /Clear scope|Needs review|High risk/ }),
+      ).toBeVisible();
       await expect(page.locator("body")).not.toContainText("Application error");
     });
   }
@@ -269,7 +269,7 @@ test.describe("Authenticated application", () => {
     await page.goto("/admin");
     await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
     await page.goto("/admin/users");
-    await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Users", exact: true })).toBeVisible();
     await page.goto("/admin/settings");
     await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
     await page.goto("/admin/ai-config");

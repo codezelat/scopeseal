@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
+import { readJsonBody } from "@/lib/http";
 
 const bodySchema = z.object({
   isShared: z.boolean(),
@@ -35,7 +36,7 @@ export async function PATCH(
       );
     }
 
-    const raw = await req.json();
+    const raw = await readJsonBody(req);
     const parsed = bodySchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json(

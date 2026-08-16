@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { analyze, PROJECT_TYPE_OPTIONS, type ProjectType } from "@/lib/engine";
 import { enhanceWithAi } from "@/lib/ai-client";
+import { readJsonBody } from "@/lib/http";
 
 const projectTypes = PROJECT_TYPE_OPTIONS.map((o) => o.value) as [
   ProjectType,
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const raw = await req.json();
+    const raw = await readJsonBody(req);
     const parsed = bodySchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json(

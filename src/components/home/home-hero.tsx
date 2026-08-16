@@ -7,7 +7,15 @@ import styles from "./home-page.module.css";
 
 export function HomeHero() {
   return (
-    <section className={styles.hero} aria-labelledby="home-heading">
+    <>
+      <link
+        rel="preload"
+        as="image"
+        href="/images/home/inbox-result-dark-hd.webp"
+        type="image/webp"
+        fetchPriority="high"
+      />
+      <section className={styles.hero} aria-labelledby="home-heading">
       <div className={styles.heroGrid} aria-hidden="true">
         <Image
           className={styles.heroGridImage}
@@ -62,6 +70,7 @@ export function HomeHero() {
           alt="ScopeSeal reviewing a project inquiry and showing a clarity score of 27"
         />
       </div>
-    </section>
+      </section>
+    </>
   );
 }

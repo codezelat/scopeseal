@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "Features",
   description: "Find scope gaps, risky wording, and missing project details before work begins.",
+  alternates: { canonical: "/features" },
 };
 
 const features = [

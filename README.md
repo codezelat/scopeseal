@@ -211,12 +211,12 @@ enhancement on top of it.
   password changes, account deletion.
 - **Admin role** — full admin dashboard with platform analytics (user counts,
   review counts, average scores, band distribution, recent activity), user
-  management (promote/demote), global settings (guest quota, site name,
+  management (promote/demote), global settings (guest quota,
   maintenance mode), and AI provider configuration.
 
 ### Sharing & Export
 
-- **Shareable report links** — every analysis gets an unguessable 12-char slug;
+- **Shareable report links** — every analysis gets an unguessable 24-character slug;
   reports are shareable via `/result/{slug}` with `noindex` so they don't appear
   in search engines.
 - **Markdown export** — download any report as a `.md` file with the full
@@ -329,25 +329,25 @@ asserts deep equality.
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| **Framework** | [Next.js](https://nextjs.org) (App Router, Turbopack, React 19.2) | 16.2.9 |
+| **Framework** | [Next.js](https://nextjs.org) (App Router, Turbopack, React 19.2) | 16.3.1 |
 | **Language** | TypeScript (strict mode) | ^5 |
-| **React** | React + React DOM | 19.2.4 |
+| **React** | React + React DOM | 19.2.8 |
 | **Styling** | [Tailwind CSS](https://tailwindcss.com) v4 (CSS-first config, no `tailwind.config.ts`) | ^4 |
-| **Components** | [shadcn/ui](https://ui.shadcn.com) (radix-nova style, brand-customized) | ^4.11.0 |
-| **UI Primitives** | [Radix UI](https://www.radix-ui.com) | ^1.6.0 |
-| **Animation** | [Motion](https://motion.dev) (`motion/react`, formerly Framer Motion) | ^12.40.0 |
-| **Database** | PostgreSQL ([NeonDB](https://neon.tech)) via [Prisma](https://prisma.io) 7 | ^7.8.0 |
-| **DB Driver** | `@prisma/adapter-pg` + `pg` (Prisma 7 driver adapter — required) | ^7.8.0 / ^8.21.0 |
-| **Auth** | [Auth.js](https://authjs.dev) v5 (`next-auth@beta`) + `@auth/prisma-adapter` | 5.0.0-beta.31 / ^2.11.2 |
+| **Components** | Local, brand-customized shadcn/ui components | source-owned |
+| **UI Primitives** | [Radix UI](https://www.radix-ui.com) | ^1.6.7 |
+| **Animation** | [Motion](https://motion.dev) (`motion/react`, formerly Framer Motion) | ^13.1.0 |
+| **Database** | PostgreSQL ([NeonDB](https://neon.tech)) via [Prisma](https://prisma.io) 7 | ^7.9.1 |
+| **DB Driver** | `@prisma/adapter-pg` + `pg` | ^7.9.1 / ^8.23.0 |
+| **Auth** | [Auth.js](https://authjs.dev) v5 credentials + JWT sessions | 5.0.0-beta.32 |
 | **Validation** | [Zod](https://zod.dev) | ^4.4.3 |
-| **Icons** | [lucide-react](https://lucide.dev) | ^1.20.0 |
+| **Icons** | [lucide-react](https://lucide.dev) + React Icons brand icons | ^1.31.0 / 5.7.0 |
 | **Password Hashing** | bcryptjs (cost factor 12) | ^3.0.3 |
 | **Theming** | next-themes (dark mode first-class) | ^0.4.6 |
-| **Toasts** | sonner | ^2.0.7 |
-| **Unit Testing** | [Vitest](https://vitest.dev) | ^4.1.9 |
-| **E2E Testing** | [Playwright](https://playwright.dev) | ^1.61.0 |
-| **Linting** | ESLint 9 + eslint-config-next | ^9 / 16.2.9 |
-| **Script Runner** | tsx (for Prisma seed scripts) | ^4.22.4 |
+| **Toasts** | sonner | ^2.0.8 |
+| **Unit Testing** | [Vitest](https://vitest.dev) | ^4.1.10 |
+| **E2E Testing** | [Playwright](https://playwright.dev) | ^1.62.1 |
+| **Linting** | ESLint 9 + eslint-config-next | ^9 / 16.3.1 |
+| **Script Runner** | tsx (for Prisma seed scripts) | ^4.23.12 |
 | **Deployment** | [Vercel](https://vercel.com) | — |
 | **Package Manager** | pnpm | — |
 
@@ -402,7 +402,7 @@ scopeseal/
 │   ├── ARCHITECTURE.md          # Architecture, data model, API contract, security
 │   └── UI_UX_GUIDELINES.md      # Brand, palette, typography, animation, accessibility
 ├── e2e/
-│   └── scope-seal.spec.ts       # Playwright E2E suite (23 tests)
+│   └── scope-seal.spec.ts       # Playwright E2E suite (34 tests)
 ├── AGENTS.md                    # Coding agent instructions (stack, conventions, pitfalls)
 ├── .env.example                 # Environment variable documentation
 ├── vercel.json                  # Security headers
@@ -483,10 +483,11 @@ driver adapter.
 
 | Model | Purpose | Key Fields |
 |-------|---------|------------|
-| **User** | Authentication | `email` (unique), `passwordHash` (bcrypt), `name`, `role` (`USER`/`ADMIN`), `guestReportsUsed` |
-| **Review** | Stored analysis | `userId` (nullable for guests), `projectType`, `inputText` (truncated 5k), `score`, `band`, `categories`/`missing`/`risks`/`suggestions`/`outputs` (JSON), `shareSlug` (unique, 12-char), `isShared` |
+| **User** | Authentication | `email` (unique), `passwordHash` (bcrypt), `name`, `role`, `authVersion` |
+| **PasswordResetToken** | Password recovery | one hashed, expiring, single-use token per user |
+| **Review** | Stored analysis | `userId` (nullable for guests), `projectType`, `inputText` (truncated 5k), `score`, `band`, `sensitiveWarning`, JSON findings/outputs, 24-char `shareSlug`, `isShared` |
 | **Template** | Reusable scope templates | `projectType`, `title`, `body`, `sortOrder` |
-| **Setting** | Key-value platform config | `key` (unique), `value` (JSON) — stores `aiModeEnabled`, `guestQuota`, `rateLimit`, `branding` |
+| **Setting** | Key-value platform config | `guestReportQuota`, `maintenanceMode`, and `branding` |
 | **AiConfig** | Singleton AI provider config | `provider`, `baseUrl`, `apiKeyEncrypted` (AES-256-GCM), `model`, `enabled` |
 | **Account** | Auth.js adapter (future OAuth) | Standard NextAuth fields |
 | **Session** | Auth.js adapter (unused — JWT) | Standard NextAuth fields |
@@ -501,7 +502,7 @@ driver adapter.
 
 The seed script (`prisma/seed.ts`) creates:
 - An **admin user** (email from `ADMIN_EMAIL` env, bcrypt-hashed password)
-- 4 **platform settings** (`aiModeEnabled: false`, `guestQuota: 3`, `rateLimit`, `branding`)
+- 3 **platform settings** (`guestReportQuota`, `maintenanceMode`, and `branding`)
 - 4 **default templates** (Website, SEO, Maintenance, General) with bracketed
   placeholders for common scope sections
 
@@ -517,6 +518,8 @@ The seed script (`prisma/seed.ts`) creates:
 - **Timing-attack mitigation**: a 300ms delay is applied when a user lookup fails,
   to prevent email enumeration.
 - Custom `role` (`USER`/`ADMIN`) propagated through the JWT token → session.
+- `authVersion` invalidates every existing JWT after password changes or resets.
+- Password reset tokens are random, SHA-256 hashed at rest, single use, and expire after 30 minutes.
 - `getCurrentUser()` server-side helper for server components and route handlers.
 
 ### Route Protection
@@ -536,10 +539,10 @@ The seed script (`prisma/seed.ts`) creates:
 |---------|---------------|
 | **Password hashing** | bcrypt, cost factor 12 |
 | **Provider key encryption** | AES-256-GCM (12-byte IV, 16-byte auth tag), key from `AI_ENCRYPTION_KEY` env. Format: `iv:authTag:ciphertext` (hex). Keys are never returned to the client in plaintext — only a masked hint (`••••last4`). |
-| **Rate limiting** | Per-IP sliding-window (10 requests / 60 seconds), runs before everything else. Returns 429 with `Retry-After`. |
+| **Rate limiting** | Per-IP sliding windows for analysis, sign-in, sign-up, password, contact, and deletion paths. Upstash Redis is used when configured, with a bounded per-instance fallback. |
 | **Guest quota** | Cookie-based (`ss_guest_count`, httpOnly, 30-day), default 3 reports. Bypassed by signing in. |
-| **Shared reports** | Unguessable 12-char slugs + `noindex` (X-Robots-Tag + meta robots) so they never appear in search. |
-| **Security headers** | `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, HSTS, `Permissions-Policy` — via `vercel.json`. |
+| **Shared reports** | 144-bit, 24-character slugs plus meta and HTTP `noindex`. Account reports are private until their owner enables sharing. |
+| **Security headers** | CSP, HSTS, clickjacking, MIME sniffing, referrer, permissions, opener, resource, and origin isolation headers via `vercel.json`. |
 | **Input validation** | Every API route validates with Zod. Analyze endpoint enforces 50–50,000 char range. |
 | **No stack traces** | Errors return structured `{ error, code }` JSON. |
 | **Extension privacy** | The Chrome extension captures text only on explicit user action — no auto-upload, no background scanning, no `<all_urls>`. |
@@ -553,6 +556,9 @@ The seed script (`prisma/seed.ts`) creates:
 | Route | Type | Description |
 |-------|------|-------------|
 | `/` | Server | Landing page — hero, how-it-works, project types, features, live score demo, extension CTA |
+| `/features` | Server | Product capabilities and report preview |
+| `/how-it-works` | Server | Three-step product workflow |
+| `/contact` | Server + action | Validated, rate-limited contact form with email fallback |
 | `/analyze` | Server + Client | Scope analyzer — project-type selector, textarea, live word count, "paste example" per type, analysis trigger |
 | `/result/[slug]` | Server + Client | Shared report viewer — full results dashboard (score ring, categories, missing, risks, outputs, export, AI enhance). `noindex`. |
 | `/privacy` | Server | Privacy policy — data processed, extension permissions, shared reports, AI enhancement, retention |
@@ -565,6 +571,8 @@ The seed script (`prisma/seed.ts`) creates:
 |-------|-------------|
 | `/signin` | Sign-in form (email + password) with server action |
 | `/signup` | Sign-up form (name + email + password, min 8 chars) with server action; auto-login on success |
+| `/forgot-password` | Generic, rate-limited password reset request |
+| `/reset-password` | Expiring single-use token password reset |
 
 ### Authenticated App (`/app`)
 
@@ -573,7 +581,7 @@ The seed script (`prisma/seed.ts`) creates:
 | `/app` | Dashboard — welcome, review count, quick-link cards, 3 most recent reviews |
 | `/app/reviews` | My reviews — paginated list (20/page) with score chips, badges, text preview |
 | `/app/templates` | Template library — grouped by project type, "Use template" → pre-fills `/analyze` |
-| `/app/settings` | Account settings — profile name, appearance/theme, change password, delete account |
+| `/app/settings` | Profile, appearance, session-invalidating password change, and password-confirmed account deletion |
 
 ### Admin (`/admin`)
 
@@ -581,7 +589,7 @@ The seed script (`prisma/seed.ts`) creates:
 |-------|-------------|
 | `/admin` | Overview — total users, total reviews, average score, reviews this week, band distribution chart, recent activity table |
 | `/admin/users` | User management — searchable, paginated, promote/demote roles (self-demotion guarded) |
-| `/admin/settings` | Global settings — guest quota, site name, maintenance mode |
+| `/admin/settings` | Global guest quota and maintenance mode |
 | `/admin/ai-config` | AI provider config — enable/disable, provider select, base URL, API key (masked), model, test connection |
 
 ### Special Routes
@@ -589,7 +597,7 @@ The seed script (`prisma/seed.ts`) creates:
 | Route | Description |
 |-------|-------------|
 | `/robots.txt` | Allows `/`, disallows `/app`, `/admin`, `/api`, `/result/` |
-| `/sitemap.xml` | Lists `/`, `/analyze`, `/signin`, `/signup` |
+| `/sitemap.xml` | Lists every indexable public marketing, analyzer, support, and legal route |
 | `/manifest.webmanifest` | PWA manifest (ScopeSeal, standalone, dark theme) |
 
 ---
@@ -626,14 +634,14 @@ with the appropriate HTTP status.
 |--------|-------|------|-------------|
 | `PATCH` | `/api/user/update-name` | User | Update display name (1–100 chars). |
 | `PATCH` | `/api/user/change-password` | User | Change password (verify current, min 8 new). Code: `INVALID_PASSWORD` (400). |
-| `DELETE` | `/api/user/delete` | User | Permanently delete account (cascades to reviews). |
+| `DELETE` | `/api/user/delete` | User | Password-confirmed permanent account and review deletion. |
 
 ### Admin
 
 | Method | Route | Auth | Description |
 |--------|-------|------|-------------|
 | `GET` | `/api/admin/ai-config` | Admin | Get AI config (provider, baseUrl, model, enabled, `hasKey`, masked `keyHint`). |
-| `PUT` | `/api/admin/ai-config` | Admin | Upsert AI config. `apiKey` is encrypted before storage. Empty key removes it. |
+| `PUT` | `/api/admin/ai-config` | Admin | Upsert a public HTTPS provider config. `apiKey` is encrypted before storage. |
 | `PATCH` | `/api/admin/ai-config` | Admin | Toggle `enabled` only. |
 | `POST` | `/api/admin/ai-config/test` | Admin | Test AI connection — decrypts key, calls `{baseUrl}/models`, verifies model exists. 15s timeout. |
 | `GET` | `/api/admin/settings` | Admin | List all settings. |
@@ -736,9 +744,9 @@ All animations use [Motion](https://motion.dev) (`motion/react`) and respect
 
 ## Testing
 
-### Unit Tests — Vitest (65 tests)
+### Unit Tests — Vitest (81 tests)
 
-Located in [`src/lib/engine/__tests__/engine.test.ts`](./src/lib/engine/__tests__/engine.test.ts).
+Located under [`src/lib`](./src/lib).
 Coverage includes:
 
 - **Determinism** — identical inputs produce deeply-equal outputs
@@ -758,15 +766,17 @@ Coverage includes:
 - **Text utilities** — word count, sentence splitting, phrase finding, negation
 - **Calibration regression** — detailed website scores ≥ 70, vague stays < 45,
   hyphenated/slash terms matched
+- **Password recovery** — token creation, hashing, expiry, URL construction, and validation
+- **Provider URL safety** — public HTTPS allowlist behavior and private-network rejection
 
 ```bash
 pnpm test
 ```
 
-### E2E Tests — Playwright (23 tests)
+### E2E Tests — Playwright (34 tests)
 
 Located in [`e2e/scope-seal.spec.ts`](./e2e/scope-seal.spec.ts). Chromium-only,
-auto-starts the dev server on port 3001. Coverage includes:
+auto-starts the production server on port 3100. Coverage includes:
 
 - **Landing page** — hero H1, project types, footer → legal page navigation
 - **Analyze flow** — paste text → analyze → score visible, no application error
@@ -774,6 +784,10 @@ auto-starts the dev server on port 3001. Coverage includes:
   maintenance, WhatsApp message, professional proposal, very long text
 - **Button disabled state** — analyze button disabled when textarea empty
 - **Auth pages** — signin/signup render with correct headings and form fields
+- **Authenticated lifecycle** — sign-up, private review, sharing, saved reviews,
+  profile, password rotation, re-authentication, and account deletion
+- **Admin workspaces** — overview, users, global settings, AI configuration,
+  and protected API access with configured seed credentials
 - **No legal advice** — landing page doesn't mention "legal advice", "attorney",
   or "contract is invalid"
 - **Public pages** — privacy, terms, support, robots.txt, sitemap.xml,
@@ -847,31 +861,29 @@ pnpm start
 All variables are documented in [`.env.example`](./.env.example). Copy it to
 `.env` and fill in the values.
 
-### Required
+### Core required
 
 | Variable | Description |
 |----------|-------------|
 | `DATABASE_URL` | NeonDB Postgres pooler URL. Use `-pooler` endpoint, keep `?sslmode=require`, **remove** `channel_binding=require` (Prisma's pg adapter doesn't support it). |
 | `AUTH_SECRET` | JWT signing secret. Generate with `openssl rand -base64 32`. |
-| `AUTH_TRUST_HOST` | Trusted production host (e.g. `https://scopeseal.codezela.com`). |
-| `AI_ENCRYPTION_KEY` | 32-byte hex key (64 chars) for AES-256-GCM encryption of provider API keys. Generate with `openssl rand -hex 32`. |
 
-### Optional
+### Feature and production configuration
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `NEXT_PUBLIC_APP_NAME` | `ScopeSeal` | Public app name |
-| `NEXT_PUBLIC_APP_URL` | `https://scopeseal.codezela.com` | Public app URL |
+| `NEXT_PUBLIC_APP_URL` | localhost fallback | Required in production and used in password reset links |
 | `GUEST_REPORT_QUOTA` | `3` | Max guest analyses before sign-in required |
-| `RATE_LIMIT_WINDOW_SECONDS` | `60` | Rate limit window (documented; limiter currently uses hardcoded 60s) |
-| `RATE_LIMIT_MAX_REQUESTS` | `10` | Max requests per window (documented; limiter currently uses hardcoded 10) |
+| `RATE_LIMIT_WINDOW_SECONDS` | `60` | Default analysis rate-limit window |
+| `RATE_LIMIT_MAX_REQUESTS` | `10` | Default analysis requests per window |
 | `ADMIN_EMAIL` | `admin@codezela.com` | Seed admin email |
-| `ADMIN_PASSWORD` | — | Seed admin password (skipped if unset) |
-| `UPSTASH_REDIS_REST_URL` | — | Optional distributed rate limiting (in-memory used if unset) |
-| `UPSTASH_REDIS_REST_TOKEN` | — | Optional Upstash Redis token |
-| `OPENAI_API_KEY` | — | Optional server-side AI fallback (admin config preferred) |
-| `OPENAI_BASE_URL` | `https://api.openai.com/v1` | Optional AI fallback base URL |
-| `OPENAI_MODEL` | `gpt-4o-mini` | Optional AI fallback model |
+| `ADMIN_PASSWORD` | none | Required to create or update the seeded administrator |
+| `UPSTASH_REDIS_REST_URL` | per-instance fallback | Set with the token for distributed production rate limiting |
+| `UPSTASH_REDIS_REST_TOKEN` | per-instance fallback | Set with the URL for distributed production rate limiting |
+| `RESEND_API_KEY` | email disabled | Required for password recovery and contact delivery |
+| `RESEND_EMAIL_FROM` | email disabled | Verified Resend sender used for transactional email |
+| `CONTACT_EMAIL_TO` | contact form disabled | Inbox that receives contact submissions |
+| `AI_ENCRYPTION_KEY` | AI configuration disabled | 64-character hex key for encrypted provider credentials |
 
 ---
 

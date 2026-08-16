@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { auth } from "@/auth";
 import { rateLimit } from "@/lib/rate-limit";
 import { getRequestIp } from "@/lib/request-context";
+import { readJsonBody } from "@/lib/http";
 
 const bodySchema = z.object({ password: z.string().min(1).max(128) });
 
@@ -30,7 +31,7 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    const parsed = bodySchema.safeParse(await req.json());
+    const parsed = bodySchema.safeParse(await readJsonBody(req));
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Enter your password", code: "VALIDATION_ERROR" },

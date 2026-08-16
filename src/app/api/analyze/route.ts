@@ -12,6 +12,7 @@ import { checkGuestQuota, incrementGuestCount } from "@/lib/guest-quota";
 import { rateLimit } from "@/lib/rate-limit";
 import type { Prisma, ReviewBand } from "@/generated/prisma/client";
 import { getPlatformSetting } from "@/lib/platform-settings";
+import { readJsonBody } from "@/lib/http";
 
 const projectTypes = PROJECT_TYPE_OPTIONS.map((o) => o.value) as [
   ProjectType,
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const raw = await req.json();
+    const raw = await readJsonBody(req);
     const parsed = bodySchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json(

@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { isPasswordResetEmailConfigured, sendPasswordChangedEmail } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
 import { getRequestIp } from "@/lib/request-context";
+import { readJsonBody } from "@/lib/http";
 
 const bodySchema = z.object({
   currentPassword: z.string().min(1),
@@ -34,7 +35,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const raw = await req.json();
+    const raw = await readJsonBody(req);
     const parsed = bodySchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json(

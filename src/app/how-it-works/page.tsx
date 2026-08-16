@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "How It Works",
   description: "Turn a project brief into a clear ScopeSeal report in three steps.",
+  alternates: { canonical: "/how-it-works" },
 };
 
 const steps = [

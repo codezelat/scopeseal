@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: "Analyze your scope",
   description:
     "Paste your project brief or scope of work and get a Scope Clarity Score with detailed feedback on missing items, risky wording, and suggestions.",
+  alternates: { canonical: "/analyze" },
 };
 
 export default async function AnalyzePage({

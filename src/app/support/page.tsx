@@ -4,7 +4,11 @@ import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
 import { Button } from "@/components/ui/button";
 
-export const metadata: Metadata = { title: "Support", description: "Get help with ScopeSeal." };
+export const metadata: Metadata = {
+  title: "Support",
+  description: "Get help with ScopeSeal.",
+  alternates: { canonical: "/support" },
+};
 
 const questions = [
   { title: "What does ScopeSeal check?", answer: "It checks project text for missing details, vague wording, and delivery risk." },

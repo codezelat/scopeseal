@@ -12,8 +12,8 @@ const steps = [
   },
   {
     number: "02",
-    title: "AI Analysis",
-    description: "AI checks your brief for missing requirements",
+    title: "Scope Analysis",
+    description: "ScopeSeal checks your brief for missing requirements",
     darkSrc: "/images/home/workflow-analyze-dark.webp",
     lightSrc: "/images/home/workflow-analyze-light.webp",
   },

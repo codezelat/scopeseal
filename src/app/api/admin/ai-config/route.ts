@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getCurrentUser } from "@/auth";
 import { encrypt } from "@/lib/crypto";
 import { isSafeProviderBaseUrl } from "@/lib/provider-url";
+import { readJsonBody } from "@/lib/http";
 
 export async function GET() {
   try {
@@ -50,10 +51,10 @@ export async function GET() {
 }
 
 const putSchema = z.object({
-  provider: z.string().min(1).max(50).optional(),
-  baseUrl: z.string().url().refine(isSafeProviderBaseUrl, "Use a public HTTPS provider URL").optional(),
+  provider: z.enum(["openai", "openai-compatible"]).optional(),
+  baseUrl: z.string().trim().url().refine(isSafeProviderBaseUrl, "Use a public HTTPS provider URL").optional(),
   apiKey: z.string().max(500).optional(),
-  model: z.string().min(1).max(100).optional(),
+  model: z.string().trim().min(1).max(100).optional(),
   enabled: z.boolean().optional(),
 });
 
@@ -67,7 +68,7 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const raw = await req.json();
+    const raw = await readJsonBody(req);
     const parsed = putSchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json(
@@ -134,7 +135,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const raw = await req.json();
+    const raw = await readJsonBody(req);
     const parsed = patchSchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json(

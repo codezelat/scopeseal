@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/auth";
+import { readJsonBody } from "@/lib/http";
 
 const roleSchema = z.object({
   role: z.enum(["ADMIN", "USER"]),
@@ -21,7 +22,7 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const raw = await req.json();
+    const raw = await readJsonBody(req);
     const parsed = roleSchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json(

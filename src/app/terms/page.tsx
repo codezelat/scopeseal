@@ -5,6 +5,7 @@ import { Footer } from "@/components/site/footer";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description: "Terms for using ScopeSeal by Codezela.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

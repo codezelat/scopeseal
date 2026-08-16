@@ -28,7 +28,7 @@ const featureCards = [
     imageClassName: styles.featureImageRisk,
   },
   {
-    title: "AI Suggestions",
+    title: "Clear Suggestions",
     description: "Get recommendations to improve your brief.",
     className: styles.featureWide,
     darkSrc: "/images/home/report-page-dark.webp",

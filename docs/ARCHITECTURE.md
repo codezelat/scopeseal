@@ -31,20 +31,21 @@ extension (quick capture + subset review).
 ## Data model (Prisma)
 
 - **User** — `id`, `email` (unique), `passwordHash`, `name`, `role`
-  (`USER` | `ADMIN`), `guestReportsUsed Int @default(0)`, timestamps.
+  (`USER` | `ADMIN`), `authVersion`, timestamps.
+- **PasswordResetToken** — one hashed, 30-minute, single-use token per user.
 - **Account / Session / VerificationToken** — standard Auth.js adapter tables.
 - **Review** — `id`, `userId` (nullable for pre-login guests), `projectType`,
-  `inputText`, `inputWordCount`, `score Int`, `categories Json`, `missing Json`,
+  `inputText`, `inputWordCount`, `score Int`, `sensitiveWarning`, `categories Json`, `missing Json`,
   `risks Json`, `suggestions Json`, `outputs Json`, `shareSlug` (unique,
   unguessable), `isShared Boolean @default(false)`, timestamps.
 - **Template** — `id`, `projectType`, `title`, `body`, `sortOrder`, timestamps.
-- **Setting** — `key` (unique), `value Json`. Singletons: `aiModeEnabled`,
-  `guestQuota`, `rateLimit`.
+- **Setting** — `key` (unique), `value Json`. Active settings:
+  `guestReportQuota`, `maintenanceMode`, and `branding`.
 - **AiConfig** — `id` (singleton), `provider`, `baseUrl`, `apiKeyEncrypted`
   (AES-GCM at rest), `model`, `enabled Boolean`. One row.
 
 Relations: `User 1—* Review`. `Review.shareSlug` is the private-share key
-(28-char base62, unguessable), served with `X-Robots-Tag: noindex` and
+(24-character base64url, 144 bits), served with `X-Robots-Tag: noindex` and
 `<meta name="robots" content="noindex">`. Shared reports are never in the sitemap.
 
 ## Deterministic analysis engine (`src/lib/engine/`)
@@ -90,15 +91,17 @@ risk", never "wrong".
 
 | Method | Route | Auth | Purpose |
 | --- | --- | --- | --- |
-| POST | `/api/reviews` | guest+ (quota) or user | run analysis, persist, return result |
-| GET | `/api/reviews/:slug` | public if `isShared` | fetch shared report (noindex) |
-| GET | `/api/reviews` | user | paginated saved reviews |
+| POST | `/api/analyze` | guest+ (quota) or user | run analysis, persist, return result |
+| POST | `/api/analyze/enhance` | user | optional, admin-gated AI rewrite |
 | DELETE | `/api/reviews/:id` | owner | delete report |
-| POST | `/api/reviews/:id/share` | owner | enable private share link |
-| GET | `/api/project-types` | public | list project types + metadata |
+| PATCH | `/api/reviews/:id/share` | owner | enable or disable the private share link |
 | GET | `/api/templates` | public | list templates |
-| POST | `/api/ai/enhance` | user | optional AI enhancement (only if enabled) |
-| Admin | `/api/admin/*` | ADMIN | settings, ai-config, analytics, users |
+| PATCH | `/api/user/update-name` | user | update profile name |
+| PATCH | `/api/user/change-password` | user | verify, rotate, and invalidate sessions |
+| DELETE | `/api/user/delete` | user | password-confirmed account deletion |
+| GET/PATCH | `/api/admin/settings` | ADMIN | global settings |
+| GET/PUT/PATCH/DELETE | `/api/admin/ai-config` | ADMIN | encrypted provider configuration |
+| PATCH | `/api/admin/users/:id/role` | ADMIN | role management with self-demotion guard |
 
 All mutations are Zod-validated. Rate-limited per IP for guests.
 
@@ -106,7 +109,10 @@ All mutations are Zod-validated. Rate-limited per IP for guests.
 
 - Provider API keys are **AES-256-GCM encrypted at rest** (env `AI_ENCRYPTION_KEY`).
   Keys never appear in client bundles or logs.
-- Guest analysis is rate-limited (IP) and quota-capped.
+- Analysis and sensitive authentication/account actions are rate-limited by IP.
+  Upstash provides distributed production limits when configured, with a bounded
+  per-instance fallback for local development.
+- Provider base URLs require public HTTPS addresses before server-side requests.
 - Selected/pasted text from the extension is sent to the web app **only on
   explicit user action** (button click). No auto-upload, no background capture.
 - Private share links use unguessable slugs + `noindex`. Reports are not public

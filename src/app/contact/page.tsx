@@ -8,6 +8,7 @@ import { Header } from "@/components/site/header";
 export const metadata: Metadata = {
   title: "Contact",
   description: "Contact the ScopeSeal team.",
+  alternates: { canonical: "/contact" },
 };
 
 export default function ContactPage() {
