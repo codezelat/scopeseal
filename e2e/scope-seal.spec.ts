@@ -67,10 +67,9 @@ test.describe("Landing page", () => {
       name: /ScopeSeal Chrome extension open in Chrome/i,
     });
     await extensionVisual.scrollIntoViewIfNeeded();
-    await expect(extensionVisual).toHaveCSS(
-      "background-image",
-      /extension-realistic-light\.webp/,
-    );
+    const lightArtwork = extensionVisual.locator("img").first();
+    await expect(lightArtwork).toBeVisible();
+    await expect(lightArtwork).toHaveAttribute("src", /extension-realistic-light\.webp/);
   });
 });
 
