@@ -13,20 +13,11 @@ export function HomeHero() {
         as="image"
         href="/images/home/inbox-result-dark-hd.webp"
         type="image/webp"
+        media="(min-width: 801px)"
         fetchPriority="high"
       />
       <section className={styles.hero} aria-labelledby="home-heading">
-      <div className={styles.heroGrid} aria-hidden="true">
-        <Image
-          className={styles.heroGridImage}
-          src="/images/home/grid-dark.webp"
-          alt=""
-          fill
-          priority
-          fetchPriority="high"
-          sizes="(max-width: 800px) 1px, 100vw"
-        />
-      </div>
+      <div className={styles.heroGrid} aria-hidden="true" />
       <div className={styles.heroInner}>
         <Image
           className={styles.heroMascot}

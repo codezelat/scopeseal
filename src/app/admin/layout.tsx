@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/admin-guard";
 import { AdminNavigation } from "@/components/product/admin-navigation";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: { default: "Admin", template: "%s | ScopeSeal Admin" },
@@ -20,6 +21,7 @@ export default async function AdminLayout({
       <main className="mx-auto min-h-[calc(100vh-4rem)] w-full min-w-0 max-w-6xl overflow-x-hidden px-4 pb-24 pt-8 sm:px-6 md:min-h-screen md:pb-10 md:pt-10">
         {children}
       </main>
+      <Toaster />
     </div>
   );
 }

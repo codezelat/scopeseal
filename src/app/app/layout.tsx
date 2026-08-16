@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getCurrentUser } from "@/auth";
 import { AppNavigation } from "@/components/product/app-navigation";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -23,6 +24,7 @@ export default async function AppLayout({
         isAdmin={user.role === "ADMIN"}
       />
       <div className="min-w-0 pb-20 md:ml-60 md:pb-0">{children}</div>
+      <Toaster />
     </div>
   );
 }

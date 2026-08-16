@@ -1,13 +1,16 @@
 import fs from "node:fs";
 import { defineConfig } from "prisma/config";
+import { normalizeDatabaseUrl } from "./src/lib/database-url";
 
 // Prisma 7: the datasource `url` lives here (NOT in schema.prisma).
 function loadDatabaseUrl(): string {
-  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
+  if (process.env.DATABASE_URL) {
+    return normalizeDatabaseUrl(process.env.DATABASE_URL);
+  }
   try {
     const envFile = fs.readFileSync(".env", "utf8");
     const match = envFile.match(/DATABASE_URL="([^"]+)"/);
-    if (match) return match[1];
+    if (match) return normalizeDatabaseUrl(match[1]);
   } catch {
     /* .env may not exist in some environments */
   }

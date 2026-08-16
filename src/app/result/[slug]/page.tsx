@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/auth";
 import { db } from "@/lib/db";
 import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
+import { Toaster } from "@/components/ui/sonner";
 import { ResultView } from "./result-view";
 import type {
   AnalysisResult,
@@ -105,6 +106,7 @@ export default async function ResultPage({ params }: PageProps) {
         />
       </main>
       <Footer />
+      <Toaster />
     </>
   );
 }

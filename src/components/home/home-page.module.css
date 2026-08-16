@@ -25,7 +25,7 @@
   --home-border: #2c2c2c;
   --home-accent: #1267ed;
   --home-accent-hover: #0758d8;
-  --home-grid: none;
+  --home-grid: url("/images/home/grid-dark.webp");
   --home-rays: url("/images/home/rays-dark.webp");
 }
 
@@ -307,17 +307,6 @@
   pointer-events: none;
 }
 
-.heroGridImage {
-  z-index: -1;
-  display: none;
-  object-fit: cover;
-  object-position: center bottom;
-}
-
-:global(.dark) .heroGridImage {
-  display: block;
-}
-
 .heroInner {
   position: relative;
   display: grid;
@@ -386,15 +375,26 @@
 }
 
 .themeImage {
+  position: relative;
   display: block;
-  background-image: var(--image-light);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
+  overflow: hidden;
 }
 
-:global(.dark) .themeImage {
-  background-image: var(--image-dark);
+.themeImage > img {
+  object-fit: contain;
+  object-position: center;
+}
+
+.themeImageDark {
+  display: none;
+}
+
+:global(.dark) .themeImageLight {
+  display: none;
+}
+
+:global(.dark) .themeImageDark {
+  display: block;
 }
 
 .heroPreview {
@@ -519,23 +519,32 @@
 
 .featureImageClarity {
   height: 330px;
-  background-size: cover;
+}
+
+.featureImageClarity > img,
+.aiReviewBack > img,
+.aiReviewFront > img {
+  object-fit: cover;
 }
 
 .featureImageMissing,
 .featureImageRisk {
   height: 92px;
-  background-size: 92% auto;
 }
 
-:global(.dark) .featureImageMissing {
-  background-position: center 48%;
-  background-size: 56% auto;
+.featureImageMissing > img,
+.featureImageRisk > img {
+  transform: scale(0.92);
 }
 
-:global(.dark) .featureImageRisk {
-  background-position: center 87%;
-  background-size: 56% auto;
+:global(.dark) .featureImageMissing > img {
+  object-position: center 48%;
+  transform: scale(0.56);
+}
+
+:global(.dark) .featureImageRisk > img {
+  object-position: center 87%;
+  transform: scale(0.56);
 }
 
 .featureImageSuggestions,
@@ -543,9 +552,8 @@
   height: 154px;
 }
 
-:global(.dark) .featureImageSuggestions {
-  background-position: center 72%;
-  background-size: 100% auto;
+:global(.dark) .featureImageSuggestions > img {
+  object-position: center 72%;
 }
 
 .workflowSection {
@@ -635,8 +643,11 @@
   width: 100%;
   aspect-ratio: 1.1;
   margin-top: 10px;
-  background-position: top center;
   transition: filter 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.stepImage > img {
+  object-position: top center;
 }
 
 .workflowGrid li:hover .stepImage {
@@ -689,7 +700,6 @@
   aspect-ratio: 414 / 238;
   border: 1px solid var(--home-border);
   border-radius: 5px;
-  background-size: cover;
   box-shadow: 0 28px 55px rgb(0 0 0 / 24%);
   transition: filter 260ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -903,9 +913,15 @@
   width: 100%;
   height: 100%;
   min-height: 360px;
-  background-position: center bottom;
-  background-size: min(100%, 520px) auto;
   transition: filter 260ms ease, transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.extensionVisual > img {
+  right: 0 !important;
+  bottom: 0 !important;
+  left: auto !important;
+  width: min(100%, 520px) !important;
+  object-position: center bottom;
 }
 
 .extensionSection:hover .extensionVisual {
@@ -1123,14 +1139,6 @@
     background-position: 42% bottom;
     background-size: 100% 100%, 48px 48px, 48px 48px;
     mask-image: linear-gradient(to bottom, transparent 5%, black 44%, black 88%, transparent 100%);
-  }
-
-  :global(.dark) .heroGridImage,
-  .heroGridImage {
-    display: block;
-    width: 1px !important;
-    height: 1px !important;
-    opacity: 0;
   }
 
   .heroInner {

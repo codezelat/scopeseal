@@ -865,7 +865,7 @@ All variables are documented in [`.env.example`](./.env.example). Copy it to
 
 | Variable | Description |
 |----------|-------------|
-| `DATABASE_URL` | NeonDB Postgres pooler URL. Use `-pooler` endpoint, keep `?sslmode=require`, **remove** `channel_binding=require` (Prisma's pg adapter doesn't support it). |
+| `DATABASE_URL` | NeonDB Postgres pooler URL. Use the `-pooler` endpoint with `?sslmode=verify-full`; remove `channel_binding=require` (the app also normalizes legacy URLs safely). |
 | `AUTH_SECRET` | JWT signing secret. Generate with `openssl rand -base64 32`. |
 
 ### Feature and production configuration

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
+import { Toaster } from "@/components/ui/sonner";
 import { db } from "@/lib/db";
 import { PROJECT_TYPE_OPTIONS, type ProjectType } from "@/lib/engine";
 import { AnalyzeClient } from "./analyze-client";
@@ -49,6 +50,7 @@ export default async function AnalyzePage({
         />
       </main>
       <Footer />
+      <Toaster />
     </>
   );
 }

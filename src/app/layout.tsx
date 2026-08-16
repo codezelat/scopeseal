@@ -2,8 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Sora, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/sonner";
 
 const sora = Sora({
   subsets: ["latin"],
@@ -19,6 +17,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
   display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -89,10 +88,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TooltipProvider>
-            {children}
-          </TooltipProvider>
-          <Toaster />
+          {children}
         </ThemeProvider>
       </body>
     </html>
