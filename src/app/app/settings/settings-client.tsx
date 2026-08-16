@@ -44,6 +44,7 @@ export function SettingsClient({ name: initialName, email, role }: SettingsClien
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
 
   async function saveName() {
     const cleanName = name.trim();
@@ -82,7 +83,8 @@ export function SettingsClient({ name: initialName, email, role }: SettingsClien
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      toast.success("Password changed");
+      toast.success("Password changed. Sign in again.");
+      await signOut({ callbackUrl: "/signin?reset=success" });
     } catch {
       toast.error("Could not change password");
     } finally {
@@ -93,7 +95,11 @@ export function SettingsClient({ name: initialName, email, role }: SettingsClien
   async function deleteAccount() {
     setDeleting(true);
     try {
-      const response = await fetch("/api/user/delete", { method: "DELETE" });
+      const response = await fetch("/api/user/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: deletePassword }),
+      });
       if (!response.ok) return toast.error(await readError(response, "Could not delete account"));
       await signOut({ callbackUrl: "/" });
     } catch {
@@ -144,10 +150,11 @@ export function SettingsClient({ name: initialName, email, role }: SettingsClien
           <Dialog>
             <DialogTrigger asChild><Button variant="destructive">Delete account</Button></DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Delete account?</DialogTitle><DialogDescription>This cannot be undone.</DialogDescription></DialogHeader>
+              <DialogHeader><DialogTitle>Delete account?</DialogTitle><DialogDescription>This permanently removes your account and saved reviews. Enter your password to confirm.</DialogDescription></DialogHeader>
+              <div className="grid gap-2 py-2"><Label htmlFor="delete-password">Password</Label><Input id="delete-password" type="password" autoComplete="current-password" maxLength={128} value={deletePassword} onChange={(event) => setDeletePassword(event.target.value)} /></div>
               <DialogFooter>
                 <DialogClose asChild><Button variant="outline" disabled={deleting}>Cancel</Button></DialogClose>
-                <Button variant="destructive" onClick={deleteAccount} disabled={deleting}>{deleting ? "Deleting..." : "Delete permanently"}</Button>
+                <Button variant="destructive" onClick={deleteAccount} disabled={deleting || !deletePassword}>{deleting ? "Deleting..." : "Delete permanently"}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>

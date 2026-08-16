@@ -44,7 +44,7 @@ export async function contactAction(
   }
 
   const ip = await getRequestIp();
-  const limit = rateLimit(ip, {
+  const limit = await rateLimit(ip, {
     namespace: "contact",
     maxRequests: 5,
     windowMs: 15 * 60 * 1_000,

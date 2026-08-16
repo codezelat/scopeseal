@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import { Check, Copy, Download, Link2Off, Plus, Share2, Sparkles, Trash2 } from "lucide-react";
 import type { AnalysisResult } from "@/lib/engine";
@@ -68,6 +70,7 @@ export function ResultView({
   aiEnabled = false,
   scopeText = "",
 }: ResultViewProps) {
+  const router = useRouter();
   const reduced = useReducedMotion();
   const [copied, setCopied] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -123,7 +126,8 @@ export function ResultView({
     try {
       const response = await fetch(`/api/reviews/${reviewId}`, { method: "DELETE" });
       if (!response.ok) return toast.error("Could not delete review");
-      window.location.assign("/app/reviews");
+      router.push("/app/reviews");
+      router.refresh();
     } catch {
       toast.error("Could not delete review");
     } finally {
@@ -175,7 +179,7 @@ export function ResultView({
         <Button variant="outline" size="sm" onClick={downloadReport}><Download className="size-4" />Download</Button>
         {isShared ? <Button variant="outline" size="sm" onClick={() => copyText(window.location.href, "share")}><Share2 className="size-4" />{copied === "share" ? "Copied" : "Share"}</Button> : null}
         {isOwner ? <Button variant="outline" size="sm" onClick={toggleSharing} disabled={sharing}>{isShared ? <Link2Off className="size-4" /> : <Share2 className="size-4" />}{sharing ? "Saving..." : isShared ? "Make private" : "Enable sharing"}</Button> : null}
-        <Button variant="outline" size="sm" asChild><a href="/analyze"><Plus className="size-4" />New</a></Button>
+        <Button variant="outline" size="sm" asChild><Link href="/analyze"><Plus className="size-4" />New</Link></Button>
         {aiEnabled && scopeText ? <Button size="sm" onClick={enhanceScope} disabled={aiLoading}><Sparkles className="size-4" />{aiLoading ? "Enhancing..." : "Improve with AI"}</Button> : null}
         {isOwner ? (
           <Dialog>

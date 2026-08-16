@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/auth";
 import { encrypt } from "@/lib/crypto";
+import { isSafeProviderBaseUrl } from "@/lib/provider-url";
 
 export async function GET() {
   try {
@@ -50,8 +51,8 @@ export async function GET() {
 
 const putSchema = z.object({
   provider: z.string().min(1).max(50).optional(),
-  baseUrl: z.string().url().optional(),
-  apiKey: z.string().optional(),
+  baseUrl: z.string().url().refine(isSafeProviderBaseUrl, "Use a public HTTPS provider URL").optional(),
+  apiKey: z.string().max(500).optional(),
   model: z.string().min(1).max(100).optional(),
   enabled: z.boolean().optional(),
 });
@@ -94,6 +95,13 @@ export async function PUT(req: NextRequest) {
       ...(apiKeyEncrypted ? { apiKeyEncrypted } : {}),
     };
 
+    if (upsertData.enabled && !apiKeyEncrypted && !existing?.apiKeyEncrypted) {
+      return NextResponse.json(
+        { error: "Add an API key before enabling AI enhancement.", code: "AI_KEY_REQUIRED" },
+        { status: 400 },
+      );
+    }
+
     await db.aiConfig.upsert({
       where: { id: "singleton" },
       update: upsertData,
@@ -131,6 +139,17 @@ export async function PATCH(req: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json(
         { error: parsed.error.issues[0]?.message ?? "Invalid input", code: "VALIDATION_ERROR" },
+        { status: 400 },
+      );
+    }
+
+    const existing = await db.aiConfig.findUnique({
+      where: { id: "singleton" },
+      select: { apiKeyEncrypted: true },
+    });
+    if (parsed.data.enabled && !existing?.apiKeyEncrypted) {
+      return NextResponse.json(
+        { error: "Add an API key before enabling AI enhancement.", code: "AI_KEY_REQUIRED" },
         { status: 400 },
       );
     }

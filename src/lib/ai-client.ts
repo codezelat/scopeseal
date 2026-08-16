@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 import { decrypt } from "@/lib/crypto";
+import { z } from "zod";
+import { isSafeProviderBaseUrl } from "@/lib/provider-url";
 
 export interface AiEnhanceParams {
   scopeText: string;
@@ -28,6 +30,7 @@ export async function enhanceWithAi(
   if (!config || !config.enabled || !config.apiKeyEncrypted) {
     return null;
   }
+  if (!isSafeProviderBaseUrl(config.baseUrl)) return null;
 
   let apiKey: string;
   try {
@@ -56,7 +59,8 @@ export async function enhanceWithAi(
             content: `Project type: ${params.projectType}\n\nAnalysis summary: ${params.analysisSummary}\n\nOriginal scope:\n${params.scopeText}\n\nRewrite this scope to be clearer and more professional. Return as JSON.`,
           },
         ],
-        temperature: 0.7,
+        temperature: 0.2,
+        max_tokens: 4_000,
         response_format: { type: "json_object" },
       }),
       signal: controller.signal,
@@ -66,23 +70,21 @@ export async function enhanceWithAi(
       return null;
     }
 
-    const data = await res.json();
+    const responseText = await res.text();
+    if (responseText.length > 2_000_000) return null;
+    const data = JSON.parse(responseText);
     const content = data?.choices?.[0]?.message?.content;
     if (typeof content !== "string") return null;
 
-    const parsed = JSON.parse(content) as {
-      rewrittenScope?: unknown;
-      improvements?: unknown;
-    };
-
-    if (typeof parsed.rewrittenScope !== "string") return null;
-    const improvements = Array.isArray(parsed.improvements)
-      ? parsed.improvements.filter((i): i is string => typeof i === "string")
-      : [];
+    const parsed = z.object({
+      rewrittenScope: z.string().min(1).max(100_000),
+      improvements: z.array(z.string().min(1).max(500)).max(20).default([]),
+    }).safeParse(JSON.parse(content));
+    if (!parsed.success) return null;
 
     return {
-      rewrittenScope: parsed.rewrittenScope,
-      improvements,
+      rewrittenScope: parsed.data.rewrittenScope,
+      improvements: parsed.data.improvements,
     };
   } catch {
     return null;

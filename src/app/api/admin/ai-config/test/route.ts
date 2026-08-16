@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/auth";
 import { decrypt } from "@/lib/crypto";
+import { isSafeProviderBaseUrl } from "@/lib/provider-url";
 
 export async function POST() {
   try {
@@ -22,6 +23,13 @@ export async function POST() {
         success: false,
         message: "No API key configured.",
       });
+    }
+
+    if (!isSafeProviderBaseUrl(config.baseUrl)) {
+      return NextResponse.json(
+        { success: false, message: "Provider URL must be a public HTTPS address." },
+        { status: 400 },
+      );
     }
 
     let apiKey: string;

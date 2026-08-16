@@ -8,9 +8,8 @@ const db = new PrismaClient({ adapter });
 async function main() {
   // Settings
   const settings = [
-    { key: "aiModeEnabled", value: { value: false } },
-    { key: "guestQuota", value: { value: Number(process.env.GUEST_REPORT_QUOTA ?? 3) } },
-    { key: "rateLimit", value: { windowSeconds: 60, maxRequests: 10 } },
+    { key: "guestReportQuota", value: Number(process.env.GUEST_REPORT_QUOTA ?? 3) },
+    { key: "maintenanceMode", value: false },
     { key: "branding", value: { name: "ScopeSeal", publisher: "Codezela Technologies" } },
   ];
   for (const s of settings) {
@@ -21,6 +20,9 @@ async function main() {
     });
   }
   console.log(`✓ ${settings.length} settings`);
+
+  // Remove setting keys that were used by older builds but are no longer read.
+  await db.setting.deleteMany({ where: { key: { in: ["aiModeEnabled", "guestQuota", "rateLimit"] } } });
 
   // Admin user
   const adminEmail = process.env.ADMIN_EMAIL ?? "admin@codezela.com";

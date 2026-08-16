@@ -55,23 +55,24 @@ model PasswordResetToken {
 }
 
 model Review {
-  id             String     @id @default(cuid())
-  userId         String?
-  user           User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
-  projectType    String
-  inputText      String
-  inputWordCount Int        @default(0)
-  score          Int        @default(0)
-  band           ReviewBand @default(risky)
-  categories     Json
-  missing        Json
-  risks          Json
-  suggestions    Json
-  outputs        Json
-  shareSlug      String     @unique
-  isShared       Boolean    @default(false)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  id               String     @id @default(cuid())
+  userId           String?
+  user             User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  projectType      String
+  inputText        String
+  inputWordCount   Int        @default(0)
+  score            Int        @default(0)
+  band             ReviewBand @default(risky)
+  sensitiveWarning Boolean    @default(false)
+  categories       Json
+  missing          Json
+  risks            Json
+  suggestions      Json
+  outputs          Json
+  shareSlug        String     @unique
+  isShared         Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 
   @@index([userId])
   @@index([createdAt])

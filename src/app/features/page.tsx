@@ -33,7 +33,8 @@ export default function FeaturesPage() {
           </Reveal>
           <Reveal delay={0.08} className="min-w-0">
             <div className="overflow-hidden rounded-lg border border-border bg-card p-2 sm:p-3">
-              <Image src="/images/home/inbox-result-dark-hd.webp" alt="ScopeSeal analysis showing a clarity score and identified scope risks" width={1677} height={938} priority sizes="(max-width: 1024px) 100vw, 56vw" className="h-auto w-full rounded-md" />
+              <Image src="/images/home/inbox-result-light-hd.webp" alt="ScopeSeal analysis showing a clarity score and identified scope risks" width={1677} height={938} priority sizes="(max-width: 1024px) 100vw, 56vw" className="h-auto w-full rounded-md dark:hidden" />
+              <Image src="/images/home/inbox-result-dark-hd.webp" alt="" aria-hidden="true" width={1677} height={938} priority sizes="(max-width: 1024px) 100vw, 56vw" className="hidden h-auto w-full rounded-md dark:block" />
             </div>
           </Reveal>
         </section>

@@ -23,6 +23,10 @@ export default defineConfig({
   webServer: {
     command: `source ~/.nvm/nvm.sh && pnpm build && pnpm start --port ${port}`,
     url: `http://localhost:${port}`,
+    env: {
+      ...process.env,
+      RATE_LIMIT_MAX_REQUESTS: "1000",
+    },
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

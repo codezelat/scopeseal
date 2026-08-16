@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { auth } from "@/auth";
 
 const bodySchema = z.object({
-  name: z.string().min(1).max(100),
+  name: z.string().trim().min(1).max(100),
 });
 
 export async function PATCH(req: NextRequest) {

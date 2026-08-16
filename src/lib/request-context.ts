@@ -2,10 +2,14 @@ import { headers } from "next/headers";
 
 const LOCAL_HOST_PATTERN = /^(localhost|127\.0\.0\.1)(:\d+)?$/i;
 
-export async function getRequestIp(): Promise<string> {
-  const requestHeaders = await headers();
+export function getIpFromHeaders(requestHeaders: Pick<Headers, "get">): string {
   const forwarded = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim();
   return (forwarded || requestHeaders.get("x-real-ip") || "unknown").slice(0, 128);
+}
+
+export async function getRequestIp(): Promise<string> {
+  const requestHeaders = await headers();
+  return getIpFromHeaders(requestHeaders);
 }
 
 export async function getTrustedAppOrigin(): Promise<string> {

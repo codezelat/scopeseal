@@ -45,7 +45,7 @@ export async function forgotPasswordAction(
   }
 
   const ip = await getRequestIp();
-  const limit = rateLimit(ip, {
+  const limit = await rateLimit(ip, {
     namespace: "forgot-password",
     maxRequests: 5,
     windowMs: 15 * 60 * 1000,

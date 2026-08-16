@@ -15,6 +15,7 @@ export async function incrementGuestCount(): Promise<number> {
   store.set(COOKIE_NAME, String(next), {
     httpOnly: true,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: MAX_AGE,
   });

@@ -1,8 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
+import { isPasswordResetEmailConfigured, sendPasswordChangedEmail } from "@/lib/email";
+import { rateLimit } from "@/lib/rate-limit";
+import { getRequestIp } from "@/lib/request-context";
 
 const bodySchema = z.object({
   currentPassword: z.string().min(1),
@@ -19,6 +22,18 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    const limit = await rateLimit(await getRequestIp(), {
+      namespace: "change-password",
+      maxRequests: 5,
+      windowMs: 15 * 60 * 1_000,
+    });
+    if (!limit.success) {
+      return NextResponse.json(
+        { error: "Too many password attempts. Try again later.", code: "RATE_LIMITED" },
+        { status: 429 },
+      );
+    }
+
     const raw = await req.json();
     const parsed = bodySchema.safeParse(raw);
     if (!parsed.success) {
@@ -30,7 +45,7 @@ export async function PATCH(req: NextRequest) {
 
     const user = await db.user.findUnique({
       where: { id: session.user.id },
-      select: { passwordHash: true },
+      select: { id: true, passwordHash: true },
     });
     if (!user) {
       return NextResponse.json(
@@ -50,11 +65,33 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    if (await bcrypt.compare(parsed.data.newPassword, user.passwordHash)) {
+      return NextResponse.json(
+        { error: "Choose a password different from your current password", code: "PASSWORD_REUSED" },
+        { status: 400 },
+      );
+    }
+
     const newHash = await bcrypt.hash(parsed.data.newPassword, 12);
-    await db.user.update({
-      where: { id: session.user.id },
-      data: { passwordHash: newHash },
+    const updated = await db.$transaction(async (transaction) => {
+      const nextUser = await transaction.user.update({
+        where: { id: session.user.id },
+        data: { passwordHash: newHash, authVersion: { increment: 1 } },
+        select: { id: true, email: true, name: true, authVersion: true },
+      });
+      await transaction.session.deleteMany({ where: { userId: session.user.id } });
+      return nextUser;
     });
+
+    if (isPasswordResetEmailConfigured()) {
+      after(async () => {
+        try {
+          await sendPasswordChangedEmail(updated);
+        } catch {
+          // Password changes must succeed even if the confirmation email is unavailable.
+        }
+      });
+    }
 
     return NextResponse.json(
       { success: true },

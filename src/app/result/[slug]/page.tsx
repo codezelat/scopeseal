@@ -12,13 +12,16 @@ import type {
   RiskHit,
 } from "@/lib/engine";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getAiEnabled(): Promise<boolean> {
   try {
     const config = await db.aiConfig.findUnique({
       where: { id: "singleton" },
-      select: { enabled: true },
+      select: { enabled: true, apiKeyEncrypted: true },
     });
-    return config?.enabled ?? false;
+    return Boolean(config?.enabled && config.apiKeyEncrypted);
   } catch {
     return false;
   }
@@ -37,7 +40,12 @@ export async function generateMetadata({
     select: { score: true, band: true, projectType: true, isShared: true },
   });
   if (!review) return { title: "Result not found" };
-  if (!review.isShared) return { title: "Private result" };
+  if (!review.isShared) {
+    return {
+      title: "Private result",
+      robots: { index: false, follow: false, nocache: true },
+    };
+  }
 
   const bandLabel =
     review.band === "clear"
@@ -53,6 +61,7 @@ export async function generateMetadata({
       title: `ScopeSeal Score: ${review.score}/100`,
       description: `${bandLabel}, analyzed by ScopeSeal`,
     },
+    robots: { index: false, follow: false, nocache: true },
   };
 }
 
@@ -77,7 +86,7 @@ export default async function ResultPage({ params }: PageProps) {
     suggestions: review.suggestions as unknown as string[],
     outputs: review.outputs as unknown as AnalysisResult["outputs"],
     wordCount: review.inputWordCount,
-    sensitiveWarning: false,
+    sensitiveWarning: review.sensitiveWarning,
   };
 
   return (

@@ -6,7 +6,7 @@ const AUTH_TAG_LENGTH = 16;
 
 function getKey(): Buffer {
   const hex = process.env.AI_ENCRYPTION_KEY;
-  if (!hex || hex.length !== 64) {
+  if (!hex || !/^[a-f0-9]{64}$/i.test(hex)) {
     throw new Error(
       "AI_ENCRYPTION_KEY must be a 64-character hex string (32 bytes). Generate with: openssl rand -hex 32",
     );

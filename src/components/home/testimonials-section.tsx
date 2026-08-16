@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useRef, useState } from "react";
+import { useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { HomeMotionSection } from "./home-motion";
@@ -40,35 +40,15 @@ const profiles = [
 
 export function TestimonialsSection() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const frameRef = useRef<number | null>(null);
   const reducedMotion = useReducedMotion();
+  const orderedProfiles = profiles.map((_, offset) => {
+    const originalIndex = (activeIndex + offset) % profiles.length;
+    return { profile: profiles[originalIndex], originalIndex };
+  });
 
-  const goTo = useCallback((index: number) => {
+  function goTo(index: number) {
     const nextIndex = (index + profiles.length) % profiles.length;
-    const viewport = viewportRef.current;
-    const card = viewport?.querySelector<HTMLElement>(`[data-profile-index="${nextIndex}"]`);
-    if (!viewport || !card) return;
-
-    viewport.scrollTo({
-      left: card.offsetLeft - viewport.offsetLeft,
-      behavior: reducedMotion ? "auto" : "smooth",
-    });
     setActiveIndex(nextIndex);
-  }, [reducedMotion]);
-
-  function handleScroll() {
-    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
-    frameRef.current = requestAnimationFrame(() => {
-      const viewport = viewportRef.current;
-      if (!viewport) return;
-      const cards = Array.from(viewport.querySelectorAll<HTMLElement>("[data-profile-index]"));
-      const closest = cards.reduce((best, card, index) => {
-        const distance = Math.abs(card.offsetLeft - viewport.offsetLeft - viewport.scrollLeft);
-        return distance < best.distance ? { index, distance } : best;
-      }, { index: 0, distance: Number.POSITIVE_INFINITY });
-      setActiveIndex(closest.index);
-    });
   }
 
   return (
@@ -88,13 +68,11 @@ export function TestimonialsSection() {
         </div>
       </div>
       <div
-        ref={viewportRef}
         className={styles.testimonialViewport}
         role="region"
         aria-roledescription="carousel"
         aria-label="ScopeSeal user profiles"
         tabIndex={0}
-        onScroll={handleScroll}
         onKeyDown={(event) => {
           if (event.key === "ArrowLeft") {
             event.preventDefault();
@@ -107,14 +85,14 @@ export function TestimonialsSection() {
         }}
       >
         <div className={styles.testimonialGrid}>
-          {profiles.map((profile, index) => (
+          {orderedProfiles.map(({ profile, originalIndex }) => (
             <motion.article
               className={styles.testimonialCard}
               key={profile.name}
-              data-profile-index={index}
-              aria-label={`${profile.name}, ${index + 1} of ${profiles.length}`}
+              layout="position"
+              aria-label={`${profile.name}, ${originalIndex + 1} of ${profiles.length}`}
               whileHover={reducedMotion ? undefined : { y: -4 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
+              transition={{ duration: reducedMotion ? 0 : 0.22, ease: "easeOut" }}
             >
               <div className={styles.profileHeader}>
                 <span className={styles.testimonialAvatar}>

@@ -35,7 +35,7 @@ export async function resetPasswordAction(
   }
 
   const ip = await getRequestIp();
-  const limit = rateLimit(ip, {
+  const limit = await rateLimit(ip, {
     namespace: "reset-password",
     maxRequests: 10,
     windowMs: 15 * 60 * 1000,

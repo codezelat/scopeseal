@@ -1,4 +1,11 @@
 import { test, expect } from "@playwright/test";
+import { randomUUID } from "node:crypto";
+
+try {
+  process.loadEnvFile(".env");
+} catch {
+  // CI provides environment variables directly.
+}
 
 /**
  * ScopeSeal E2E — acceptance criteria + QA scenarios from SPEC.md
@@ -161,6 +168,113 @@ test.describe("Auth", () => {
       "Password updated. Sign in with your new password.",
     );
     await expect(page).not.toHaveURL(/token=/);
+  });
+});
+
+test.describe("Authenticated application", () => {
+  test("completes the private review and account lifecycle", async ({ page, browser }) => {
+    const id = randomUUID();
+    const email = `scope-e2e-${id}@example.com`;
+    const password = `Scope-${id}-A1!`;
+    const newPassword = `Changed-${id}-B2!`;
+
+    await page.goto("/signup");
+    await page.getByLabel("Name").fill("Scope E2E User");
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Password").fill(password);
+    await page.getByRole("button", { name: "Create account" }).click();
+    await expect(page).toHaveURL(/\/app$/, { timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: /Welcome, Scope/ })).toBeVisible();
+
+    await page.goto("/admin");
+    await expect(page).toHaveURL(/\/app$/);
+
+    await page.getByRole("link", { name: "Templates" }).click();
+    await expect(page.getByRole("heading", { name: "Templates" })).toBeVisible();
+    await page.getByRole("link", { name: "Use template" }).first().click();
+    await expect(page).toHaveURL(/\/analyze\?template=/);
+
+    await page.getByLabel("Scope text input").fill(
+      "Build a six-page website in eight weeks with two revision rounds. Payment is 50% upfront and 50% at launch. The client supplies copy and brand assets. Hosting stays in the client account. Acceptance requires signed UAT. Out of scope is e-commerce. Contact email: client@example.com password: TemporarySecret123.",
+    );
+    await page.getByRole("button", { name: "Analyze scope" }).click();
+    await expect(page).toHaveURL(/\/result\//, { timeout: 15_000 });
+    await expect(page.getByText("This brief may contain sensitive content.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Enable sharing" })).toBeVisible();
+
+    const resultUrl = page.url();
+    const anonymousContext = await browser.newContext();
+    const anonymousPage = await anonymousContext.newPage();
+    await anonymousPage.goto(resultUrl);
+    await expect(anonymousPage.getByText("404")).toBeVisible();
+
+    await page.getByRole("button", { name: "Enable sharing" }).click();
+    await expect(page.getByRole("button", { name: "Make private" })).toBeVisible();
+    await anonymousPage.goto(resultUrl);
+    await expect(anonymousPage.getByRole("heading", { name: /Clear scope|Needs review|High risk/ })).toBeVisible();
+
+    await page.getByRole("button", { name: "Make private" }).click();
+    await expect(page.getByRole("button", { name: "Enable sharing" })).toBeVisible();
+    await anonymousPage.goto(resultUrl);
+    await expect(anonymousPage.getByText("404")).toBeVisible();
+    await anonymousContext.close();
+
+    await page.goto("/app/reviews");
+    await expect(page.getByRole("heading", { name: "Reviews" })).toBeVisible();
+    await expect(page.getByText("1 saved")).toBeVisible();
+    await expect(page.getByRole("row")).toHaveCount(2);
+
+    await page.goto("/app/settings");
+    await page.getByLabel("Name").fill("Scope Verified");
+    await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByText("Name updated")).toBeVisible();
+
+    await page.getByLabel("Current password").fill(password);
+    await page.getByLabel("New password").fill(newPassword);
+    await page.getByLabel("Confirm password").fill(newPassword);
+    await page.getByRole("button", { name: "Change password" }).click();
+    await expect(page).toHaveURL(/\/signin\?reset=success/, { timeout: 15_000 });
+
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Password").fill(newPassword);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await expect(page).toHaveURL(/\/app$/, { timeout: 15_000 });
+
+    await page.goto("/app/settings");
+    await page.getByRole("button", { name: "Delete account" }).click();
+    await page.getByLabel("Password").last().fill(newPassword);
+    await page.getByRole("button", { name: "Delete permanently" }).click();
+    await expect(page).toHaveURL(/\/$/, { timeout: 15_000 });
+    await page.goto("/app");
+    await expect(page).toHaveURL(/\/signin$/);
+  });
+
+  test("rejects protected APIs without a session", async ({ request }) => {
+    expect((await request.get("/api/admin/settings")).status()).toBe(403);
+    expect((await request.patch("/api/user/update-name", { data: { name: "No session" } })).status()).toBe(401);
+    expect((await request.delete("/api/reviews/not-a-review")).status()).toBe(401);
+  });
+
+  test("renders every admin workspace for a configured administrator", async ({ page }) => {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    test.skip(!adminEmail || !adminPassword, "Admin seed credentials are not configured");
+
+    await page.goto("/signin");
+    await page.getByLabel("Email").fill(adminEmail!);
+    await page.getByLabel("Password").fill(adminPassword!);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await expect(page).toHaveURL(/\/app$/, { timeout: 15_000 });
+
+    await page.goto("/admin");
+    await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
+    await page.goto("/admin/users");
+    await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
+    await page.goto("/admin/settings");
+    await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+    await page.goto("/admin/ai-config");
+    await expect(page.getByRole("heading", { name: "AI Configuration" })).toBeVisible();
+    expect((await page.request.get("/api/admin/settings")).status()).toBe(200);
   });
 });
 

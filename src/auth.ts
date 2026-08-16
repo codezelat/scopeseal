@@ -2,6 +2,8 @@ import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
+import { getIpFromHeaders } from "@/lib/request-context";
 
 type ScopeSealToken = {
   authVersion?: number;
@@ -29,10 +31,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const email = String(credentials?.email ?? "").toLowerCase().trim();
         const password = String(credentials?.password ?? "");
         if (!email || !password) return null;
+
+        const loginLimit = await rateLimit(getIpFromHeaders(request.headers), {
+          namespace: "sign-in",
+          maxRequests: 10,
+          windowMs: 15 * 60 * 1_000,
+        });
+        if (!loginLimit.success) {
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          return null;
+        }
 
         const user = await db.user.findUnique({ where: { email } });
         // Constant-ish delay to blunt brute-force timing.

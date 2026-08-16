@@ -13,9 +13,9 @@ export const metadata: Metadata = {
 };
 
 const steps = [
-  { number: "01", title: "Paste the brief", text: "Use a project brief, proposal, or client message.", image: "/images/home/workflow-paste-dark.webp", width: 466, height: 260 },
-  { number: "02", title: "Run the check", text: "ScopeSeal reviews completeness, clarity, and risk.", image: "/images/home/workflow-analyze-dark.webp", width: 466, height: 260 },
-  { number: "03", title: "Act on the report", text: "Use the findings to clarify scope before work starts.", image: "/images/home/workflow-report-dark.webp", width: 466, height: 260 },
+  { number: "01", title: "Paste the brief", text: "Use a project brief, proposal, or client message.", lightImage: "/images/home/workflow-paste-light.webp", darkImage: "/images/home/workflow-paste-dark.webp", width: 466, height: 260 },
+  { number: "02", title: "Run the check", text: "ScopeSeal reviews completeness, clarity, and risk.", lightImage: "/images/home/workflow-analyze-light.webp", darkImage: "/images/home/workflow-analyze-dark.webp", width: 466, height: 260 },
+  { number: "03", title: "Act on the report", text: "Use the findings to clarify scope before work starts.", lightImage: "/images/home/workflow-report-light.webp", darkImage: "/images/home/workflow-report-dark.webp", width: 466, height: 260 },
 ] as const;
 
 export default function HowItWorksPage() {
@@ -37,8 +37,9 @@ export default function HowItWorksPage() {
                   <span className="font-mono text-xs text-muted-foreground">{step.number}</span>
                 </div>
                 <p className="mt-2 min-h-12 text-sm leading-6 text-muted-foreground">{step.text}</p>
-                <div className="mt-6 overflow-hidden rounded-lg border border-border bg-[#080d20] p-2">
-                  <Image src={step.image} alt={`${step.title} in ScopeSeal`} width={step.width} height={step.height} sizes="(max-width: 1024px) 100vw, 33vw" className="h-auto w-full rounded-md" />
+                <div className="mt-6 overflow-hidden rounded-lg border border-border bg-muted/30 p-2 dark:bg-[#080d20]">
+                  <Image src={step.lightImage} alt={`${step.title} in ScopeSeal`} width={step.width} height={step.height} sizes="(max-width: 1024px) 100vw, 33vw" className="h-auto w-full rounded-md dark:hidden" />
+                  <Image src={step.darkImage} alt="" aria-hidden="true" width={step.width} height={step.height} sizes="(max-width: 1024px) 100vw, 33vw" className="hidden h-auto w-full rounded-md dark:block" />
                 </div>
               </li>
             </Reveal>

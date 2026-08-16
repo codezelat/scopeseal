@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { randomUUID } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import {
   analyze,
   PROJECT_TYPE_OPTIONS,
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     }
 
     const ip = getIp(req);
-    const rl = rateLimit(ip);
+    const rl = await rateLimit(ip);
     if (!rl.success) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please try again later.", code: "RATE_LIMITED" },
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
 
     const { text, projectType } = parsed.data;
     const result = analyze(text, projectType);
-    const shareSlug = randomUUID().replace(/-/g, "").slice(0, 12);
+    const shareSlug = randomBytes(18).toString("base64url");
 
     const review = await db.review.create({
       data: {
@@ -97,13 +97,14 @@ export async function POST(req: NextRequest) {
         inputWordCount: result.wordCount,
         score: result.score,
         band: bandToPrisma(result.band),
+        sensitiveWarning: result.sensitiveWarning,
         categories: result.categories as unknown as Prisma.InputJsonValue,
         missing: result.missing as unknown as Prisma.InputJsonValue,
         risks: result.risks as unknown as Prisma.InputJsonValue,
         suggestions: result.suggestions as unknown as Prisma.InputJsonValue,
         outputs: result.outputs as unknown as Prisma.InputJsonValue,
         shareSlug,
-        isShared: true,
+        isShared: isGuest,
       },
     });
 
@@ -111,8 +112,9 @@ export async function POST(req: NextRequest) {
       await incrementGuestCount();
     }
 
-    const guestQuota = isGuest
-      ? { used: (await checkGuestQuota()).used, quota: (await checkGuestQuota()).quota }
+    const quotaAfterAnalysis = isGuest ? await checkGuestQuota() : undefined;
+    const guestQuota = quotaAfterAnalysis
+      ? { used: quotaAfterAnalysis.used, quota: quotaAfterAnalysis.quota }
       : undefined;
 
     return NextResponse.json(
