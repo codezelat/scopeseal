@@ -2,7 +2,18 @@ import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = "https://scopeseal.codezela.com";
-  const routes = ["", "/analyze", "/signin", "/signup"];
+  const routes = [
+    "",
+    "/features",
+    "/how-it-works",
+    "/analyze",
+    "/support",
+    "/contact",
+    "/privacy",
+    "/terms",
+    "/signin",
+    "/signup",
+  ];
   return routes.map((route) => ({
     url: `${base}${route}`,
     lastModified: new Date(),

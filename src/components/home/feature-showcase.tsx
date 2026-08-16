@@ -39,8 +39,8 @@ const featureCards = [
     title: "Chrome Extension",
     description: "Analyze emails directly from your browser.",
     className: styles.featureWide,
-    darkSrc: "/images/home/extension-dark.webp",
-    lightSrc: "/images/home/extension-light.webp",
+    darkSrc: "/images/home/extension-realistic.webp",
+    lightSrc: "/images/home/extension-realistic.webp",
     imageClassName: styles.featureImageExtension,
   },
 ] as const;

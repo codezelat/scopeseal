@@ -26,7 +26,7 @@
   --home-accent: #1267ed;
   --home-accent-hover: #0758d8;
   --home-grid: none;
-  --home-rays: url("/images/home/rays-dark.jpg");
+  --home-rays: url("/images/home/rays-dark.webp");
 }
 
 .home h1,

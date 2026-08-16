@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { ExternalLink } from "lucide-react";
+import { FaChrome } from "react-icons/fa6";
+import { chromeExtensionUrl } from "@/components/site/public-navigation";
 import { HomeActionLink } from "./home-action-link";
 import { ThemeImage } from "./theme-image";
 import styles from "./home-page.module.css";
@@ -41,9 +42,14 @@ export function HomeHero() {
             <HomeActionLink className={styles.primaryButton} href="/analyze">
               Analyze Brief
             </HomeActionLink>
-            <a className={styles.secondaryButton} href="#extension">
+            <a
+              className={styles.secondaryButton}
+              href={chromeExtensionUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FaChrome aria-hidden="true" />
               Add To Chrome
-              <ExternalLink aria-hidden="true" />
             </a>
           </div>
         </div>

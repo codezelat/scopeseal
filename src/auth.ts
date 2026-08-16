@@ -3,6 +3,12 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
+type ScopeSealToken = {
+  authVersion?: number;
+  id?: string;
+  role?: "USER" | "ADMIN";
+};
+
 declare module "next-auth" {
   interface Session {
     user: {
@@ -42,22 +48,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           name: user.name,
           role: user.role,
+          authVersion: user.authVersion,
         } as const;
       },
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user }) {
+      const appToken = token as typeof token & ScopeSealToken;
       if (user) {
-        token.id = user.id;
-        token.role = (user as { role?: "USER" | "ADMIN" }).role;
+        appToken.id = user.id;
+        appToken.role = (user as { role?: "USER" | "ADMIN" }).role;
+        appToken.authVersion = (user as { authVersion?: number }).authVersion ?? 0;
+        return appToken;
       }
-      return token;
+
+      if (appToken.id) {
+        const current = await db.user.findUnique({
+          where: { id: appToken.id },
+          select: { authVersion: true },
+        });
+        if (!current || current.authVersion !== (appToken.authVersion ?? 0)) return null;
+      }
+      return appToken;
     },
     session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.role = (token.role as "USER" | "ADMIN") ?? "USER";
+        const appToken = token as typeof token & ScopeSealToken;
+        session.user.id = appToken.id as string;
+        session.user.role = appToken.role ?? "USER";
       }
       return session;
     },

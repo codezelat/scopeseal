@@ -1,7 +1,7 @@
 export const primaryNavigation = [
-  { label: "Dashboard", href: "/app" },
-  { label: "Templates", href: "/app/templates" },
-  { label: "Support", href: "/support" },
+  { label: "Features", href: "/features" },
+  { label: "How It Works", href: "/how-it-works" },
+  { label: "Contact", href: "/contact" },
 ] as const;
 
 export const chromeExtensionUrl =

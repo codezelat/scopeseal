@@ -21,17 +21,18 @@ const footerGroups = [
     title: "PRODUCT",
     links: [
       { label: "Analyze Brief", href: "/analyze" },
-      { label: "Dashboard", href: "/app" },
-      { label: "Saved Reviews", href: "/app/reviews" },
-      { label: "Templates", href: "/app/templates" },
+      { label: "Features", href: "/features" },
+      { label: "How It Works", href: "/how-it-works" },
+      { label: "Chrome Extension", href: chromeExtensionUrl, external: true },
     ],
   },
   {
-    title: "RESOURCES",
+    title: "ACCOUNT",
     links: [
-      { label: "Chrome Extension", href: chromeExtensionUrl, external: true },
-      { label: "Support", href: "/support" },
-      { label: "Contact", href: "mailto:info@codezela.com" },
+      { label: "Dashboard", href: "/app" },
+      { label: "Saved Reviews", href: "/app/reviews" },
+      { label: "Templates", href: "/app/templates" },
+      { label: "Settings", href: "/app/settings" },
     ],
   },
   {
@@ -39,6 +40,8 @@ const footerGroups = [
     links: [
       { label: "Sign in", href: "/signin" },
       { label: "Create account", href: "/signup" },
+      { label: "Support", href: "/support" },
+      { label: "Contact", href: "/contact" },
     ],
   },
   {

@@ -1,4 +1,5 @@
-import { HomeActionLink } from "./home-action-link";
+import { FaChrome } from "react-icons/fa6";
+import { chromeExtensionUrl } from "@/components/site/public-navigation";
 import { HomeMotionSection } from "./home-motion";
 import { ThemeImage } from "./theme-image";
 import styles from "./home-page.module.css";
@@ -12,15 +13,21 @@ export function ExtensionCtaSection() {
           The ScopeSeal Chrome extension lets you highlight any brief or client message and get an
           instant clarity score.
         </p>
-        <HomeActionLink className={styles.primaryButton} href="/support">
+        <a
+          className={styles.primaryButton}
+          href={chromeExtensionUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <FaChrome aria-hidden="true" />
           Add To Chrome
-        </HomeActionLink>
+        </a>
       </div>
       <ThemeImage
         className={styles.extensionVisual}
-        darkSrc="/images/home/extension-dark.webp"
-        lightSrc="/images/home/extension-light.webp"
-        alt="ScopeSeal Chrome extension analyzing a brief"
+        darkSrc="/images/home/extension-realistic.webp"
+        lightSrc="/images/home/extension-realistic.webp"
+        alt="ScopeSeal Chrome extension open in Chrome and ready to analyze a selected brief"
       />
     </HomeMotionSection>
   );

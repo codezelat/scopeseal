@@ -23,20 +23,35 @@ enum ReviewBand {
 }
 
 model User {
-  id               String    @id @default(cuid())
-  email            String    @unique
+  id               String   @id @default(cuid())
+  email            String   @unique
   passwordHash     String
   name             String?
-  role             UserRole  @default(USER)
-  guestReportsUsed Int       @default(0)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  role             UserRole @default(USER)
+  authVersion      Int      @default(0)
+  guestReportsUsed Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  reviews  Review[]
-  accounts Account[]
-  sessions Session[]
+  reviews            Review[]
+  accounts           Account[]
+  sessions           Session[]
+  passwordResetToken PasswordResetToken?
 
   @@map("users")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
 }
 
 model Review {
