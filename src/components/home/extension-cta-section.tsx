@@ -26,7 +26,7 @@ export function ExtensionCtaSection() {
       <ThemeImage
         className={styles.extensionVisual}
         darkSrc="/images/home/extension-realistic.webp"
-        lightSrc="/images/home/extension-realistic.webp"
+        lightSrc="/images/home/extension-realistic-light.webp"
         alt="ScopeSeal Chrome extension open in Chrome and ready to analyze a selected brief"
       />
     </HomeMotionSection>

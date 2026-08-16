@@ -43,6 +43,28 @@ test.describe("Landing page", () => {
     await expect(linkedIn).toHaveAttribute("href", "https://www.linkedin.com/company/codezela-technologies/");
     await expect(linkedIn).toHaveAttribute("target", "_blank");
   });
+
+  test("profile carousel advances and light mode uses the light extension artwork", async ({ page }) => {
+    await page.goto("/");
+
+    const profiles = page.locator("#profiles");
+    await profiles.scrollIntoViewIfNeeded();
+    await profiles.getByRole("button", { name: "Next profile" }).click();
+    await expect(profiles.getByRole("button", { name: "Show Adrian Cole" })).toHaveAttribute(
+      "aria-current",
+      "true",
+    );
+
+    await page.getByRole("button", { name: "Use light theme" }).click();
+    const extensionVisual = page.getByRole("img", {
+      name: /ScopeSeal Chrome extension open in Chrome/i,
+    });
+    await extensionVisual.scrollIntoViewIfNeeded();
+    await expect(extensionVisual).toHaveCSS(
+      "background-image",
+      /extension-realistic-light\.webp/,
+    );
+  });
 });
 
 test.describe("Analyze flow — SPEC acceptance criteria", () => {

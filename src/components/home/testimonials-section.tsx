@@ -1,67 +1,148 @@
+"use client";
+
 import Image from "next/image";
+import { useCallback, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { HomeMotionSection } from "./home-motion";
 import styles from "./home-page.module.css";
 
-const testimonials = [
+const profiles = [
   {
-    name: "Sarah Mitchell",
-    role: "Project Manager, Nexora Studio",
-    quote:
-      "We now review every client brief with ScopeSeal. It makes vague requirements clear before our team starts working.",
-    image: "/images/home/avatar-sarah.jpg",
+    name: "Maya Perera",
+    role: "Agency Delivery Lead",
+    type: "Agency workflow",
+    description: "Maya checks ownership, deadlines, and revision boundaries before every kickoff.",
+    image: "/images/home/profile-maya-perera.webp",
   },
   {
-    name: "Daniel Lee",
-    role: "Creative Director, PixelCraft",
-    quote:
-      "The risk detection is incredibly useful. We caught unclear payment terms and timeline issues within seconds.",
-    image: "/images/home/avatar-daniel.jpg",
+    name: "Adrian Cole",
+    role: "Creative Director",
+    type: "Client intake",
+    description: "Adrian turns vague requests into clear questions before his team estimates the work.",
+    image: "/images/home/profile-adrian-cole.webp",
   },
   {
-    name: "Emma Wilson",
-    role: "Freelance UI/UX Designer",
-    quote:
-      "ScopeSeal gives our team confidence before accepting a project. We know exactly what clarification before work begins.",
-    image: "/images/home/avatar-emma.jpg",
+    name: "Lena Park",
+    role: "Product Designer",
+    type: "Freelance projects",
+    description: "Lena reviews every brief for missing deliverables, feedback limits, and approvals.",
+    image: "/images/home/profile-lena-park.webp",
+  },
+  {
+    name: "Tomas Reed",
+    role: "Technical Project Manager",
+    type: "Software delivery",
+    description: "Tomas catches unclear dependencies and acceptance criteria before planning begins.",
+    image: "/images/home/profile-tomas-reed.webp",
   },
 ] as const;
 
 export function TestimonialsSection() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<number | null>(null);
+  const reducedMotion = useReducedMotion();
+
+  const goTo = useCallback((index: number) => {
+    const nextIndex = (index + profiles.length) % profiles.length;
+    const viewport = viewportRef.current;
+    const card = viewport?.querySelector<HTMLElement>(`[data-profile-index="${nextIndex}"]`);
+    if (!viewport || !card) return;
+
+    viewport.scrollTo({
+      left: card.offsetLeft - viewport.offsetLeft,
+      behavior: reducedMotion ? "auto" : "smooth",
+    });
+    setActiveIndex(nextIndex);
+  }, [reducedMotion]);
+
+  function handleScroll() {
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    frameRef.current = requestAnimationFrame(() => {
+      const viewport = viewportRef.current;
+      if (!viewport) return;
+      const cards = Array.from(viewport.querySelectorAll<HTMLElement>("[data-profile-index]"));
+      const closest = cards.reduce((best, card, index) => {
+        const distance = Math.abs(card.offsetLeft - viewport.offsetLeft - viewport.scrollLeft);
+        return distance < best.distance ? { index, distance } : best;
+      }, { index: 0, distance: Number.POSITIVE_INFINITY });
+      setActiveIndex(closest.index);
+    });
+  }
+
   return (
-    <HomeMotionSection className={styles.testimonialsSection} id="testimonials" aria-labelledby="testimonials-heading">
+    <HomeMotionSection className={styles.testimonialsSection} id="profiles" aria-labelledby="profiles-heading">
       <div className={styles.testimonialsTop}>
         <div className={styles.sectionIntro}>
-          <h2 id="testimonials-heading">Trusted By Teams Who Value Clear Scope</h2>
-          <p>
-            See how ScopeSeal helps freelancers, agencies, and software teams prevent unclear
-            requirements and costly revisions.
-          </p>
+          <h2 id="profiles-heading">Built For Teams Who Value Clear Scope</h2>
+          <p>See how different roles use a scope check before work begins.</p>
         </div>
-        <div className={styles.testimonialArrows} aria-hidden="true">
-          <ArrowLeft />
-          <ArrowRight />
+        <div className={styles.testimonialControls} aria-label="Profile carousel controls">
+          <button type="button" onClick={() => goTo(activeIndex - 1)} aria-label="Previous profile">
+            <ArrowLeft aria-hidden="true" />
+          </button>
+          <button type="button" onClick={() => goTo(activeIndex + 1)} aria-label="Next profile">
+            <ArrowRight aria-hidden="true" />
+          </button>
         </div>
       </div>
-      <div className={styles.testimonialGrid}>
-        {testimonials.map((testimonial) => (
-          <figure className={styles.testimonialCard} key={testimonial.name}>
-            <figcaption>
-              <span className={styles.testimonialAvatar}>
-                <Image src={testimonial.image} alt="" fill sizes="44px" />
-              </span>
-              <span>
-                <strong>{testimonial.name}</strong>
-                <small>{testimonial.role}</small>
-              </span>
-            </figcaption>
-            <blockquote>“{testimonial.quote}”</blockquote>
-            <div className={styles.stars} aria-label="5 out of 5 stars">
-              ★★★★★
-            </div>
-          </figure>
+      <div
+        ref={viewportRef}
+        className={styles.testimonialViewport}
+        role="region"
+        aria-roledescription="carousel"
+        aria-label="ScopeSeal user profiles"
+        tabIndex={0}
+        onScroll={handleScroll}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowLeft") {
+            event.preventDefault();
+            goTo(activeIndex - 1);
+          }
+          if (event.key === "ArrowRight") {
+            event.preventDefault();
+            goTo(activeIndex + 1);
+          }
+        }}
+      >
+        <div className={styles.testimonialGrid}>
+          {profiles.map((profile, index) => (
+            <motion.article
+              className={styles.testimonialCard}
+              key={profile.name}
+              data-profile-index={index}
+              aria-label={`${profile.name}, ${index + 1} of ${profiles.length}`}
+              whileHover={reducedMotion ? undefined : { y: -4 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+            >
+              <div className={styles.profileHeader}>
+                <span className={styles.testimonialAvatar}>
+                  <Image src={profile.image} alt="" fill sizes="52px" />
+                </span>
+                <span>
+                  <strong>{profile.name}</strong>
+                  <small>{profile.role}</small>
+                </span>
+              </div>
+              <p className={styles.profileDescription}>{profile.description}</p>
+              <span className={styles.profileType}>{profile.type}</span>
+            </motion.article>
+          ))}
+        </div>
+      </div>
+      <div className={styles.testimonialPagination} aria-label="Choose a profile">
+        {profiles.map((profile, index) => (
+          <button
+            key={profile.name}
+            type="button"
+            aria-label={`Show ${profile.name}`}
+            aria-current={activeIndex === index ? "true" : undefined}
+            onClick={() => goTo(index)}
+          />
         ))}
       </div>
+      <p className="sr-only" aria-live="polite">Profile {activeIndex + 1} of {profiles.length}</p>
     </HomeMotionSection>
   );
 }

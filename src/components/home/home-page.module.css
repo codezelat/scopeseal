@@ -728,41 +728,74 @@
   gap: 28px;
 }
 
-.testimonialArrows {
+.testimonialControls {
   display: flex;
-  gap: 26px;
+  gap: 8px;
   padding-bottom: 4px;
-  color: var(--home-muted);
 }
 
-.testimonialArrows svg {
-  width: 24px;
-  height: 24px;
+.testimonialControls button {
+  display: inline-grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--home-border);
+  border-radius: 50%;
+  background: var(--home-card);
+  color: var(--home-text);
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.testimonialControls button:hover {
+  border-color: color-mix(in srgb, var(--home-accent) 55%, var(--home-border));
+  background: var(--home-surface);
+  transform: translateY(-1px);
+}
+
+.testimonialControls button:active {
+  transform: scale(0.96);
+}
+
+.testimonialControls svg {
+  width: 19px;
+  height: 19px;
+}
+
+.testimonialViewport {
+  margin-top: 42px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.testimonialViewport::-webkit-scrollbar {
+  display: none;
 }
 
 .testimonialGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
   gap: 22px;
-  margin-top: 42px;
 }
 
 .testimonialCard {
+  flex: 0 0 calc((100% - 44px) / 3);
   min-height: 232px;
+  scroll-snap-align: start;
   border: 1px solid var(--home-border);
   border-radius: 4px;
   padding: 22px;
   background: var(--home-card);
-  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: border-color 220ms ease, box-shadow 220ms ease;
 }
 
 .testimonialCard:hover {
   border-color: color-mix(in srgb, var(--home-accent) 40%, var(--home-border));
   box-shadow: 0 18px 45px rgb(0 0 0 / 11%);
-  transform: translateY(-4px);
 }
 
-.testimonialCard figcaption {
+.profileHeader {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -773,18 +806,20 @@
 .testimonialAvatar {
   position: relative;
   display: block;
-  width: 44px;
-  height: 44px;
-  flex: 0 0 44px;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
   overflow: hidden;
+  border: 1px solid var(--home-border);
   border-radius: 50%;
+  background: var(--home-surface);
 }
 
 .testimonialAvatar img {
   object-fit: cover;
 }
 
-.testimonialCard figcaption span {
+.profileHeader > span:last-child {
   display: grid;
   gap: 3px;
 }
@@ -799,18 +834,45 @@
   font-size: 12px;
 }
 
-.testimonialCard blockquote {
-  min-height: 88px;
+.profileDescription {
+  min-height: 76px;
   padding-top: 16px;
   color: var(--home-text);
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
-.stars {
-  color: #f9b72f;
-  font-size: 14px;
-  letter-spacing: 2px;
+.profileType {
+  display: inline-flex;
+  margin-top: 16px;
+  color: var(--home-accent);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.testimonialPagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.testimonialPagination button {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--home-border);
+  cursor: pointer;
+  transition: width 180ms ease, background-color 180ms ease;
+}
+
+.testimonialPagination button[aria-current="true"] {
+  width: 24px;
+  border-radius: 999px;
+  background: var(--home-accent);
 }
 
 .extensionSection {
@@ -1005,6 +1067,10 @@
   .aiReviewCopy,
   .extensionCopy {
     padding: 38px;
+  }
+
+  .testimonialCard {
+    flex-basis: calc((100% - 22px) / 2);
   }
 }
 
@@ -1204,12 +1270,8 @@
     align-items: start;
   }
 
-  .testimonialArrows {
-    display: none;
-  }
-
-  .testimonialGrid {
-    grid-template-columns: 1fr;
+  .testimonialCard {
+    flex-basis: 100%;
   }
 
   .extensionSection {
@@ -1276,7 +1338,6 @@
   }
 
   .testimonialGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
   }
 

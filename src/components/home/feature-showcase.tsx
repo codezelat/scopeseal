@@ -40,7 +40,7 @@ const featureCards = [
     description: "Analyze emails directly from your browser.",
     className: styles.featureWide,
     darkSrc: "/images/home/extension-realistic.webp",
-    lightSrc: "/images/home/extension-realistic.webp",
+    lightSrc: "/images/home/extension-realistic-light.webp",
     imageClassName: styles.featureImageExtension,
   },
 ] as const;
