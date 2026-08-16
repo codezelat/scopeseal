@@ -2,17 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import {
   FileText,
   LayoutDashboard,
   LayoutTemplate,
   Settings,
   Shield,
+  LogOut,
+  UserRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SealLogo } from "@/components/brand/seal-logo";
 import { ThemeToggle } from "@/components/brand/theme-toggle";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navItems = [
   { label: "Dashboard", href: "/app", icon: LayoutDashboard },
@@ -94,7 +105,42 @@ export function AppNavigation({ name, email, isAdmin }: AppNavigationProps) {
         <Link href="/app" aria-label="ScopeSeal dashboard" className="text-foreground">
           <SealLogo withWordmark size={21} />
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex size-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-white outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                aria-label="Open account menu"
+              >
+                {initial}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 p-1.5">
+              <DropdownMenuLabel className="px-2 py-2">
+                <span className="block truncate text-sm text-foreground">{name || "Account"}</span>
+                <span className="block truncate font-normal">{email}</span>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild className="min-h-10 px-2">
+                <Link href="/app/settings"><UserRound />Settings</Link>
+              </DropdownMenuItem>
+              {isAdmin ? (
+                <DropdownMenuItem asChild className="min-h-10 px-2">
+                  <Link href="/admin"><Shield />Admin</Link>
+                </DropdownMenuItem>
+              ) : null}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="min-h-10 px-2"
+                onSelect={() => signOut({ callbackUrl: "/" })}
+              >
+                <LogOut />Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </header>
 
       <nav

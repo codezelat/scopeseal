@@ -21,9 +21,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `source ~/.nvm/nvm.sh && pnpm dev --port ${port}`,
+    command: `source ~/.nvm/nvm.sh && pnpm build && pnpm start --port ${port}`,
     url: `http://localhost:${port}`,
     reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
+    timeout: 120_000,
   },
 });

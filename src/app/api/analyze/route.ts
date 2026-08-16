@@ -11,6 +11,7 @@ import { auth } from "@/auth";
 import { checkGuestQuota, incrementGuestCount } from "@/lib/guest-quota";
 import { rateLimit } from "@/lib/rate-limit";
 import type { Prisma, ReviewBand } from "@/generated/prisma/client";
+import { getPlatformSetting } from "@/lib/platform-settings";
 
 const projectTypes = PROJECT_TYPE_OPTIONS.map((o) => o.value) as [
   ProjectType,
@@ -41,6 +42,14 @@ function bandToPrisma(band: string): ReviewBand {
 
 export async function POST(req: NextRequest) {
   try {
+    const maintenanceMode = await getPlatformSetting("maintenanceMode", false);
+    if (maintenanceMode === true) {
+      return NextResponse.json(
+        { error: "Analysis is temporarily paused. Please try again soon.", code: "MAINTENANCE" },
+        { status: 503, headers: { "Retry-After": "300", "Cache-Control": "no-store" } },
+      );
+    }
+
     const ip = getIp(req);
     const rl = rateLimit(ip);
     if (!rl.success) {

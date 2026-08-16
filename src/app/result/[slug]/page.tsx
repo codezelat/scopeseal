@@ -47,11 +47,11 @@ export async function generateMetadata({
         : "High Risk";
 
   return {
-    title: `Score ${review.score}/100 — ${bandLabel}`,
+    title: `Score ${review.score}/100: ${bandLabel}`,
     description: `Scope analysis result for a ${review.projectType} project. Score: ${review.score}/100.`,
     openGraph: {
       title: `ScopeSeal Score: ${review.score}/100`,
-      description: `${bandLabel} — analyzed by ScopeSeal`,
+      description: `${bandLabel}, analyzed by ScopeSeal`,
     },
   };
 }
@@ -90,6 +90,7 @@ export default async function ResultPage({ params }: PageProps) {
           shareSlug={review.shareSlug}
           projectType={review.projectType}
           isOwner={isOwner}
+          initialIsShared={review.isShared}
           aiEnabled={aiEnabled}
           scopeText={review.inputText}
         />

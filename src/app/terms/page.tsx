@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import Link from "next/link";
-import { SealLogo } from "@/components/brand/seal-logo";
+import { Header } from "@/components/site/header";
+import { Footer } from "@/components/site/footer";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -8,17 +8,11 @@ export const metadata: Metadata = {
 };
 
 export default function TermsPage() {
-  return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
-      <Link href="/" className="mb-8 inline-flex items-center gap-2">
-        <SealLogo size={28} withWordmark />
-      </Link>
-      <h1 className="font-display text-3xl font-bold mb-2">Terms of Service</h1>
-      <p className="text-sm text-muted-foreground mb-8">
-        Last updated: June 2026 · Codezela Technologies
-      </p>
-
-      <div className="prose prose-sm dark:prose-invert max-w-none space-y-4 text-muted-foreground">
+  return (<><Header /><main className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
+      <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Legal</p>
+      <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight">Terms of Service</h1>
+      <p className="mt-3 border-b border-border pb-8 text-sm text-muted-foreground">Last updated: June 2026 · Codezela Technologies</p>
+      <div className="space-y-9 py-10 text-[15px] leading-7 text-muted-foreground [&_a]:font-medium [&_a]:text-primary [&_a]:underline-offset-4 [&_a:hover]:underline [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:tracking-tight [&_li]:pl-1 [&_p]:mt-3 [&_strong]:font-semibold [&_strong]:text-foreground">
         <h2 className="text-foreground">1. Acceptance of terms</h2>
         <p>
           By using ScopeSeal (&quot;the Service&quot;), you agree to these terms.
@@ -78,11 +72,5 @@ export default function TermsPage() {
         </p>
       </div>
 
-      <div className="mt-12 border-t border-border pt-6">
-        <Link href="/" className="text-sm text-seal-violet hover:underline">
-          ← Back to ScopeSeal
-        </Link>
-      </div>
-    </main>
-  );
+    </main><Footer /></>);
 }

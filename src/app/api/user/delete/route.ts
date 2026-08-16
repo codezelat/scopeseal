@@ -12,6 +12,7 @@ export async function DELETE() {
       );
     }
 
+    await db.review.deleteMany({ where: { userId: session.user.id } });
     await db.user.delete({ where: { id: session.user.id } });
 
     return NextResponse.json(

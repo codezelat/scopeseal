@@ -24,6 +24,25 @@ test.describe("Landing page", () => {
     await expect(page).toHaveURL(/\/privacy/);
     await expect(page.getByRole("heading", { name: "Privacy Policy" })).toBeVisible();
   });
+
+  test("public navigation uses real routes and safe external links", async ({ page }) => {
+    await page.goto("/");
+
+    const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
+    await expect(primaryNavigation.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/app");
+    await expect(primaryNavigation.getByRole("link", { name: "Templates" })).toHaveAttribute("href", "/app/templates");
+    await expect(primaryNavigation.getByRole("link", { name: "Support" })).toHaveAttribute("href", "/support");
+    await expect(page.getByRole("link", { name: "Sign in" }).first()).toHaveAttribute("href", "/signin");
+
+    const codezelaLink = page.getByRole("link", { name: "Codezela Technologies" }).last();
+    await expect(codezelaLink).toHaveAttribute("href", "https://codezela.com/");
+    await expect(codezelaLink).toHaveAttribute("target", "_blank");
+    await expect(codezelaLink).toHaveAttribute("rel", /noopener/);
+
+    const linkedIn = page.getByRole("link", { name: /LinkedIn, Codezela Technologies/ });
+    await expect(linkedIn).toHaveAttribute("href", "https://www.linkedin.com/company/codezela-technologies/");
+    await expect(linkedIn).toHaveAttribute("target", "_blank");
+  });
 });
 
 test.describe("Analyze flow — SPEC acceptance criteria", () => {
@@ -118,7 +137,7 @@ test.describe("Public pages", () => {
 
   test("support page renders with content", async ({ page }) => {
     await page.goto("/support");
-    await expect(page.getByRole("heading", { name: "Support" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "How can we help?" })).toBeVisible();
   });
 
   test("robots.txt is served with correct rules", async ({ page }) => {

@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { Check, Copy, Download, Plus, Share2, Sparkles, Trash2 } from "lucide-react";
+import { Check, Copy, Download, Link2Off, Plus, Share2, Sparkles, Trash2 } from "lucide-react";
 import type { AnalysisResult } from "@/lib/engine";
 import { resultToMarkdown } from "@/lib/export";
 import { cn } from "@/lib/utils";
@@ -29,6 +29,7 @@ interface ResultViewProps {
   shareSlug: string;
   projectType: string;
   isOwner: boolean;
+  initialIsShared: boolean;
   aiEnabled?: boolean;
   scopeText?: string;
 }
@@ -63,6 +64,7 @@ export function ResultView({
   shareSlug,
   projectType,
   isOwner,
+  initialIsShared,
   aiEnabled = false,
   scopeText = "",
 }: ResultViewProps) {
@@ -72,6 +74,8 @@ export function ResultView({
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<AiEnhanceResult | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
+  const [isShared, setIsShared] = useState(initialIsShared);
+  const [sharing, setSharing] = useState(false);
   const band = bandConfig[result.band];
   const markdown = resultToMarkdown(result, projectType);
 
@@ -127,6 +131,18 @@ export function ResultView({
     }
   }
 
+  async function toggleSharing() {
+    setSharing(true);
+    try {
+      const response = await fetch(`/api/reviews/${reviewId}/share`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ isShared: !isShared }) });
+      const data = await response.json() as { error?: string; isShared?: boolean };
+      if (!response.ok || typeof data.isShared !== "boolean") throw new Error(data.error ?? "Could not update sharing");
+      setIsShared(data.isShared);
+      toast.success(data.isShared ? "Share link enabled" : "Share link disabled");
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Could not update sharing"); }
+    finally { setSharing(false); }
+  }
+
   const outputs = [
     ["internal", "Risk summary", result.outputs.internalRiskSummary],
     ["client", "Client note", result.outputs.clientFriendlyNote],
@@ -157,7 +173,8 @@ export function ResultView({
       <div className="flex flex-wrap gap-2 border-b border-border py-5" aria-label="Result actions">
         <Button variant="outline" size="sm" onClick={() => copyText(markdown, "report")}><Copy className="size-4" />{copied === "report" ? "Copied" : "Copy"}</Button>
         <Button variant="outline" size="sm" onClick={downloadReport}><Download className="size-4" />Download</Button>
-        <Button variant="outline" size="sm" onClick={() => copyText(window.location.href, "share")}><Share2 className="size-4" />{copied === "share" ? "Copied" : "Share"}</Button>
+        {isShared ? <Button variant="outline" size="sm" onClick={() => copyText(window.location.href, "share")}><Share2 className="size-4" />{copied === "share" ? "Copied" : "Share"}</Button> : null}
+        {isOwner ? <Button variant="outline" size="sm" onClick={toggleSharing} disabled={sharing}>{isShared ? <Link2Off className="size-4" /> : <Share2 className="size-4" />}{sharing ? "Saving..." : isShared ? "Make private" : "Enable sharing"}</Button> : null}
         <Button variant="outline" size="sm" asChild><a href="/analyze"><Plus className="size-4" />New</a></Button>
         {aiEnabled && scopeText ? <Button size="sm" onClick={enhanceScope} disabled={aiLoading}><Sparkles className="size-4" />{aiLoading ? "Enhancing..." : "Improve with AI"}</Button> : null}
         {isOwner ? (

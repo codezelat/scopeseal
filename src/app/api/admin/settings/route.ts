@@ -26,10 +26,10 @@ export async function GET() {
   }
 }
 
-const patchSchema = z.object({
-  key: z.string().min(1).max(100),
-  value: z.unknown(),
-});
+const patchSchema = z.discriminatedUnion("key", [
+  z.object({ key: z.literal("guestReportQuota"), value: z.number().int().min(0).max(100) }),
+  z.object({ key: z.literal("maintenanceMode"), value: z.boolean() }),
+]);
 
 export async function PATCH(req: NextRequest) {
   try {
@@ -54,8 +54,8 @@ export async function PATCH(req: NextRequest) {
 
     await db.setting.upsert({
       where: { key },
-      update: { value: value as boolean },
-      create: { key, value: value as boolean },
+      update: { value },
+      create: { key, value },
     });
 
     return NextResponse.json({ success: true });

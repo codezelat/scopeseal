@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { getPlatformSetting } from "@/lib/platform-settings";
 
 const COOKIE_NAME = "ss_guest_count";
 const MAX_AGE = 60 * 60 * 24 * 30; // 30 days
@@ -21,7 +22,9 @@ export async function incrementGuestCount(): Promise<number> {
 }
 
 export async function getGuestQuota(): Promise<number> {
-  return Number(process.env.GUEST_REPORT_QUOTA ?? 3);
+  const fallback = Number(process.env.GUEST_REPORT_QUOTA ?? 3);
+  const quota = await getPlatformSetting("guestReportQuota", fallback);
+  return typeof quota === "number" && Number.isInteger(quota) && quota >= 0 ? quota : fallback;
 }
 
 export async function checkGuestQuota(): Promise<{

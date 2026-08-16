@@ -115,7 +115,7 @@ function buildClientFriendlyNote(
 
   if (risks.length > 0) {
     parts.push(
-      `Some phrasing may be open to interpretation — defining specifics will help avoid misunderstandings.`,
+      `Some phrasing may be open to interpretation. Defining specifics will help avoid misunderstandings.`,
     );
   }
 
@@ -246,7 +246,7 @@ function getScopeSections(projectType: ProjectType): ScopeSection[] {
     {
       title: "Technical",
       missingIds: ["hosting-domain-responsibility", "third-party-responsibility"],
-      placeholder: "Hosting, domain, third-party tools — who manages and pays",
+      placeholder: "Hosting, domain, third-party tools: who manages and pays",
       defaultText: "Technical infrastructure as agreed in the proposal.",
     },
     {

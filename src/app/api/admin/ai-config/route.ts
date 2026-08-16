@@ -30,11 +30,7 @@ export async function GET() {
     }
 
     const hasKey = !!config.apiKeyEncrypted;
-    let keyHint = "";
-    if (hasKey && config.apiKeyEncrypted) {
-      const last4 = config.apiKeyEncrypted.slice(-4);
-      keyHint = `••••${last4}`;
-    }
+    const keyHint = hasKey ? "stored securely" : "";
 
     return NextResponse.json({
       provider: config.provider,
@@ -154,5 +150,16 @@ export async function PATCH(req: NextRequest) {
       { error: "An unexpected error occurred.", code: "INTERNAL_ERROR" },
       { status: 500 },
     );
+  }
+}
+
+export async function DELETE() {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== "ADMIN") return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 });
+    await db.aiConfig.upsert({ where: { id: "singleton" }, update: { apiKeyEncrypted: null, enabled: false }, create: { id: "singleton", apiKeyEncrypted: null, enabled: false } });
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ error: "An unexpected error occurred.", code: "INTERNAL_ERROR" }, { status: 500 });
   }
 }

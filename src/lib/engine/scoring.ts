@@ -64,9 +64,9 @@ export function scoreCategory(
 
   let note: string | undefined;
   if (score < 40) {
-    note = `This category needs attention — only ${found} of ${totalSignals} signal groups detected.`;
+    note = `This category needs attention. Only ${found} of ${totalSignals} signal groups detected.`;
   } else if (score < 70) {
-    note = `Partial coverage — ${found} of ${totalSignals} signal groups detected.`;
+    note = `Partial coverage: ${found} of ${totalSignals} signal groups detected.`;
   }
 
   return { id: cat.id, label: cat.label, score, weight, note };

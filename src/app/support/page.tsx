@@ -1,71 +1,24 @@
-import { Metadata } from "next";
-import Link from "next/link";
-import { SealLogo } from "@/components/brand/seal-logo";
-import { Mail, MessageCircle, Globe } from "lucide-react";
+import type { Metadata } from "next";
+import { ArrowUpRight, Mail } from "lucide-react";
+import { Header } from "@/components/site/header";
+import { Footer } from "@/components/site/footer";
+import { Button } from "@/components/ui/button";
 
-export const metadata: Metadata = {
-  title: "Support",
-  description: "Get help with ScopeSeal.",
-};
+export const metadata: Metadata = { title: "Support", description: "Get help with ScopeSeal." };
+
+const questions = [
+  { title: "What does ScopeSeal check?", answer: "It checks project text for missing details, vague wording, and delivery risk." },
+  { title: "Is this legal advice?", answer: "No. ScopeSeal is a clarity tool for agencies, freelancers, and delivery teams." },
+  { title: "How does the extension use page text?", answer: "Only after you choose to capture text. Nothing is scanned in the background." },
+] as const;
 
 export default function SupportPage() {
-  return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
-      <Link href="/" className="mb-8 inline-flex items-center gap-2">
-        <SealLogo size={28} withWordmark />
-      </Link>
-      <h1 className="font-display text-3xl font-bold mb-2">Support</h1>
-      <p className="text-muted-foreground mb-8">
-        We&apos;re here to help. Reach out and we&apos;ll get back to you.
-      </p>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-2">
-          <Mail className="h-6 w-6 text-seal-violet" />
-          <h2 className="font-display text-lg font-semibold">Email us</h2>
-          <p className="text-sm text-muted-foreground">
-            For support, feature requests, or licensing inquiries.
-          </p>
-          <a
-            href="mailto:info@codezela.com"
-            className="text-sm text-seal-violet hover:underline"
-          >
-            info@codezela.com
-          </a>
-        </div>
-
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-2">
-          <MessageCircle className="h-6 w-6 text-seal-violet" />
-          <h2 className="font-display text-lg font-semibold">FAQ</h2>
-          <p className="text-sm text-muted-foreground">
-            ScopeSeal does not provide legal advice. It&apos;s a clarity tool for
-            agencies, freelancers, and delivery teams.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-2">
-          <Globe className="h-6 w-6 text-seal-violet" />
-          <h2 className="font-display text-lg font-semibold">Chrome extension</h2>
-          <p className="text-sm text-muted-foreground">
-            Capture text from any page with one click. Your text stays local unless
-            you choose to analyze it on the web app.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-2">
-          <h2 className="font-display text-lg font-semibold">Publisher</h2>
-          <p className="text-sm text-muted-foreground">
-            ScopeSeal is a product of Codezela Technologies. © 2026 All rights
-            reserved.
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-12 border-t border-border pt-6">
-        <Link href="/" className="text-sm text-seal-violet hover:underline">
-          ← Back to ScopeSeal
-        </Link>
-      </div>
-    </main>
-  );
+  return <><Header /><main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
+    <section className="grid gap-10 border-b border-border pb-12 md:grid-cols-[1fr_auto] md:items-end">
+      <div><p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Support</p><h1 className="mt-2 max-w-xl font-display text-4xl font-semibold tracking-tight sm:text-5xl">How can we help?</h1><p className="mt-4 max-w-lg text-muted-foreground">Questions, feedback, or licensing. We’ll point you in the right direction.</p></div>
+      <Button asChild size="lg"><a href="mailto:info@codezela.com"><Mail className="size-4" />Email support<ArrowUpRight className="size-4" /></a></Button>
+    </section>
+    <section className="min-w-0 py-10" aria-labelledby="common-questions"><h2 id="common-questions" className="font-display text-xl font-semibold">Common questions</h2><div className="mt-5 min-w-0 border-t border-border">{questions.map((item) => <details key={item.title} className="group min-w-0 border-b border-border py-5"><summary className="w-full cursor-pointer list-none break-words pr-8 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring">{item.title}</summary><p className="max-w-2xl break-words pt-3 text-sm leading-6 text-muted-foreground">{item.answer}</p></details>)}</div></section>
+    <p className="border-t border-border pt-6 text-sm text-muted-foreground">ScopeSeal is published by Codezela Technologies.</p>
+  </main><Footer /></>;
 }

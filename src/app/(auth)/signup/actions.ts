@@ -41,7 +41,7 @@ export async function signUpAction(
     return undefined;
   } catch (err) {
     if (err instanceof AuthError) {
-      return { error: "Account created — please sign in." };
+      return { error: "Account created. Please sign in." };
     }
     throw err;
   }

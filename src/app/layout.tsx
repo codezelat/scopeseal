@@ -24,7 +24,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://scopeseal.codezela.com"),
   title: {
-    default: "ScopeSeal — Seal the gaps before they become unpaid work",
+    default: "ScopeSeal: Seal the gaps before they become unpaid work",
     template: "%s · ScopeSeal",
   },
   description:
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://scopeseal.codezela.com",
     siteName: "ScopeSeal",
-    title: "ScopeSeal — Seal the gaps before they become unpaid work",
+    title: "ScopeSeal: Seal the gaps before they become unpaid work",
     description:
       "Check project briefs, client messages, and proposal scopes for missing details, vague wording, and scope-creep risks.",
     images: [
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ScopeSeal — Seal the gaps before they become unpaid work",
+    title: "ScopeSeal: Seal the gaps before they become unpaid work",
     description:
       "Check project briefs, client messages, and proposal scopes for missing details, vague wording, and scope-creep risks.",
     images: ["/og.png"],
